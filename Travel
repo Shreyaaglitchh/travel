@@ -1,0 +1,2443 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Travel Companion � Explore Beyond the Destination | Kathmandu Valley</title>
+  
+  <!-- Google Fonts: Plus Jakarta Sans & Playfair Display -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Leaflet CSS & JS for Interactive Mapping -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            serif: ['"Playfair Display"', 'serif'],
+          },
+          colors: {
+            forest: {
+              50: '#f2f7f4',
+              100: '#e0ede5',
+              200: '#c3dbcd',
+              300: '#9ac1ac',
+              400: '#6ca086',
+              500: '#498267',
+              600: '#356750',
+              700: '#2a5240',
+              800: '#234235',
+              900: '#1d372c',
+              950: '#0f1f18',
+            },
+            terracotta: {
+              50: '#fdf5f3',
+              100: '#fbe8e4',
+              200: '#f8d5cd',
+              300: '#f2b7a9',
+              400: '#e88d77',
+              500: '#da684c',
+              600: '#c64d30',
+              700: '#a63d24',
+              800: '#8a3521',
+              900: '#733020',
+            },
+            stone: {
+              50: '#faf9f6',
+              100: '#f3f1ec',
+              200: '#e6e2d8',
+              300: '#d4cebf',
+              800: '#292724',
+              900: '#1c1b19',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #faf9f6;
+      color: #1c1b19;
+    }
+    /* Custom subtle scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f3f1ec;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #c3dbcd;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #498267;
+    }
+    /* Leaflet container fix */
+    #interactive-map {
+      z-index: 10;
+    }
+    .leaflet-popup-content-wrapper {
+      border-radius: 1rem;
+      padding: 4px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+    }
+    .leaflet-popup-content {
+      margin: 10px 12px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    /* Custom marker styling */
+    .custom-pin {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 9999px;
+      color: white;
+      font-weight: 700;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      border: 2.5px solid white;
+      transition: transform 0.2s ease;
+    }
+    .custom-pin:hover {
+      transform: scale(1.15);
+    }
+  </style>
+</head>
+<body class="antialiased selection:bg-forest-200 selection:text-forest-950 flex flex-col min-h-screen">
+
+  <!-- Sticky Navigation Header -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16 md:h-20">
+        <!-- Brand Logo -->
+        <button onclick="switchTab('home')" class="flex items-center gap-3 text-left group focus:outline-none">
+          <div class="w-10 h-10 rounded-xl bg-forest-800 text-white flex items-center justify-center shadow-md group-hover:bg-terracotta-600 transition-colors">
+            <i data-lucide="compass" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <span class="font-serif font-bold text-lg sm:text-xl text-forest-950 tracking-tight block leading-none">Travel Companion</span>
+            <span class="text-[11px] font-medium text-terracotta-700 uppercase tracking-wider">Kathmandu Valley Pilot</span>
+          </div>
+        </button>
+
+        <!-- Desktop Navigation -->
+        <nav class="hidden md:flex items-center gap-1 lg:gap-2">
+          <button onclick="switchTab('home')" data-nav="home" class="nav-btn px-3.5 py-2 rounded-xl text-sm font-semibold transition-all bg-forest-50 text-forest-800">
+            Explore
+          </button>
+          <button onclick="switchTab('routes')" data-nav="routes" class="nav-btn px-3.5 py-2 rounded-xl text-sm font-semibold text-stone-600 hover:text-forest-800 hover:bg-stone-100 transition-all">
+            Route Explorer
+          </button>
+          <button onclick="switchTab('destinations')" data-nav="destinations" class="nav-btn px-3.5 py-2 rounded-xl text-sm font-semibold text-stone-600 hover:text-forest-800 hover:bg-stone-100 transition-all">
+            Destinations
+          </button>
+          <button onclick="switchTab('hiking')" data-nav="hiking" class="nav-btn px-3.5 py-2 rounded-xl text-sm font-semibold text-stone-600 hover:text-forest-800 hover:bg-stone-100 transition-all">
+            Hiking & Trails
+          </button>
+          <button onclick="switchTab('map')" data-nav="map" class="nav-btn px-3.5 py-2 rounded-xl text-sm font-semibold text-stone-600 hover:text-forest-800 hover:bg-stone-100 transition-all flex items-center gap-1.5">
+            <i data-lucide="map-pin" class="w-4 h-4 text-terracotta-600"></i>
+            Interactive Map
+          </button>
+        </nav>
+
+        <!-- Scope Indicator & Mobile Menu Button -->
+        <div class="flex items-center gap-2">
+          <span class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-stone-100 text-stone-700 border border-stone-200" title="Modular database scoped to Kathmandu Valley with Nepal expansion ready">
+            <span class="w-2 h-2 rounded-full bg-forest-600"></span>
+            Region: Kathmandu Valley
+          </span>
+          <button id="mobile-menu-btn" onclick="toggleMobileMenu()" class="md:hidden p-2.5 rounded-xl text-stone-700 hover:bg-stone-100 focus:outline-none" aria-label="Toggle Menu">
+            <i data-lucide="menu" class="w-6 h-6"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Navigation Drawer -->
+    <div id="mobile-menu" class="hidden md:hidden bg-white border-b border-stone-200 px-4 pt-2 pb-4 space-y-1.5 shadow-lg">
+      <button onclick="switchTab('home'); toggleMobileMenu()" data-nav="home" class="nav-btn w-full text-left px-4 py-3 rounded-xl text-sm font-semibold bg-forest-50 text-forest-800 flex items-center gap-3">
+        <i data-lucide="home" class="w-4 h-4"></i> Explore Home
+      </button>
+      <button onclick="switchTab('routes'); toggleMobileMenu()" data-nav="routes" class="nav-btn w-full text-left px-4 py-3 rounded-xl text-sm font-semibold text-stone-700 hover:bg-stone-100 flex items-center gap-3">
+        <i data-lucide="navigation" class="w-4 h-4"></i> Route Explorer
+      </button>
+      <button onclick="switchTab('destinations'); toggleMobileMenu()" data-nav="destinations" class="nav-btn w-full text-left px-4 py-3 rounded-xl text-sm font-semibold text-stone-700 hover:bg-stone-100 flex items-center gap-3">
+        <i data-lucide="landmark" class="w-4 h-4"></i> Destinations Guide
+      </button>
+      <button onclick="switchTab('hiking'); toggleMobileMenu()" data-nav="hiking" class="nav-btn w-full text-left px-4 py-3 rounded-xl text-sm font-semibold text-stone-700 hover:bg-stone-100 flex items-center gap-3">
+        <i data-lucide="mountain" class="w-4 h-4"></i> Hiking & Adventure
+      </button>
+      <button onclick="switchTab('map'); toggleMobileMenu()" data-nav="map" class="nav-btn w-full text-left px-4 py-3 rounded-xl text-sm font-semibold text-stone-700 hover:bg-stone-100 flex items-center gap-3">
+        <i data-lucide="map" class="w-4 h-4 text-terracotta-600"></i> Interactive Map
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="flex-grow">
+
+    <!-- ==================== VIEW 1: HOME / EXPLORE ==================== -->
+    <section id="view-home" class="tab-view space-y-14 pb-16">
+      
+      <!-- Hero Banner -->
+      <div class="relative bg-forest-950 text-white overflow-hidden">
+        <div class="absolute inset-0">
+          <img 
+            src="https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1920&q=80" 
+            alt="Kathmandu Valley Stupa and Himalayan foothills" 
+            class="w-full h-full object-cover opacity-40"
+            onerror="this.style.display='none'"
+          />
+          <div class="absolute inset-0 bg-gradient-to-t from-forest-950 via-forest-950/70 to-forest-900/40"></div>
+        </div>
+
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-28">
+          <div class="max-w-3xl space-y-6">
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs sm:text-sm font-medium text-forest-100">
+              <i data-lucide="sparkles" class="w-4 h-4 text-terracotta-400"></i>
+              Explore Beyond the Destination � Kathmandu, Lalitpur & Bhaktapur
+            </div>
+            <h1 class="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-tight">
+              Navigate Heritage Streets & Himalayan Rim Trails.
+            </h1>
+            <p class="text-base sm:text-lg text-stone-200 leading-relaxed max-w-2xl">
+              Plan realistic road journeys, discover ancient Newar towns, check transparent cost & elevation estimates, and uncover nearby gems across Kathmandu Valley.
+            </p>
+
+            <!-- Instant Search Bar -->
+            <div class="pt-2">
+              <div class="relative max-w-2xl">
+                <div class="flex items-center bg-white rounded-2xl shadow-xl p-2 border border-stone-200 focus-within:ring-2 focus-within:ring-terracotta-500">
+                  <i data-lucide="search" class="w-5 h-5 text-stone-400 ml-3 mr-2 shrink-0"></i>
+                  <input 
+                    type="text" 
+                    id="hero-search-input" 
+                    oninput="handleHeroSearch(this.value)"
+                    placeholder="Search Dakshinkali, Champadevi Hiking, Bhaktapur, Nagarkot..." 
+                    class="w-full py-2.5 px-2 text-stone-900 placeholder-stone-400 text-sm sm:text-base focus:outline-none bg-transparent"
+                  />
+                  <button onclick="handleHeroSearch(document.getElementById('hero-search-input').value)" class="px-5 py-2.5 bg-terracotta-600 hover:bg-terracotta-700 text-white font-semibold text-sm rounded-xl transition-colors shrink-0">
+                    Explore
+                  </button>
+                </div>
+
+                <!-- Instant Search Results Dropdown -->
+                <div id="hero-search-results" class="hidden absolute left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-stone-200 overflow-hidden z-30 max-h-96 overflow-y-auto text-stone-900">
+                  <!-- Populated dynamically via JS -->
+                </div>
+              </div>
+
+              <!-- Quick Search Pills -->
+              <div class="flex flex-wrap items-center gap-2 mt-4 text-xs">
+                <span class="text-stone-300 font-medium">Popular searches:</span>
+                <button onclick="openDestinationModal('dakshinkali')" class="px-3 py-1 rounded-full bg-white/15 hover:bg-white/25 text-white transition">Dakshinkali Temple</button>
+                <button onclick="openHikingModal('champadevi')" class="px-3 py-1 rounded-full bg-white/15 hover:bg-white/25 text-white transition">Champadevi Hiking</button>
+                <button onclick="openDestinationModal('bhaktapur')" class="px-3 py-1 rounded-full bg-white/15 hover:bg-white/25 text-white transition">Bhaktapur Durbar</button>
+                <button onclick="quickPlanRoute('thamel', 'dakshinkali')" class="px-3 py-1 rounded-full bg-terracotta-600/80 hover:bg-terracotta-600 text-white transition">Route: Thamel ? Dakshinkali</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data Transparency & Scope Banner -->
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-white rounded-2xl p-5 sm:p-6 border border-stone-200 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div class="flex items-start gap-3.5">
+            <div class="p-2.5 rounded-xl bg-forest-50 text-forest-700 shrink-0 mt-0.5">
+              <i data-lucide="shield-check" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h2 class="text-sm font-bold text-stone-900">Transparent Travel Data Guarantee</h2>
+              <p class="text-xs sm:text-sm text-stone-600 mt-0.5">
+                We distinguish verified heritage facts & elevations from estimated travel times, fare ranges, and unavailable live traffic feeds.
+              </p>
+            </div>
+          </div>
+          <div class="flex flex-wrap gap-2 shrink-0 text-xs font-semibold">
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200">
+              <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> Verified Fact
+            </span>
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 border border-amber-200">
+              <i data-lucide="clock" class="w-3.5 h-3.5"></i> Estimated Range
+            </span>
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-stone-100 text-stone-700 border border-stone-300">
+              <i data-lucide="info" class="w-3.5 h-3.5"></i> Live Data Unavailable
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Action Cards -->
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div onclick="switchTab('routes')" class="cursor-pointer group bg-white rounded-2xl p-6 border border-stone-200 shadow-sm hover:shadow-md hover:border-forest-300 transition-all">
+            <div class="w-12 h-12 rounded-2xl bg-forest-100 text-forest-800 flex items-center justify-center mb-4 group-hover:bg-forest-800 group-hover:text-white transition-colors">
+              <i data-lucide="route" class="w-6 h-6"></i>
+            </div>
+            <h3 class="font-serif text-xl font-bold text-stone-900 mb-2">Smart Route Explorer</h3>
+            <p class="text-sm text-stone-600 mb-4">Compare bike, car/taxi, public microbus, and walking routes with landmarks, stops, and estimated NPR fares.</p>
+            <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-forest-700 group-hover:translate-x-1 transition-transform">
+              Plan a Route <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </span>
+          </div>
+
+          <div onclick="switchTab('hiking')" class="cursor-pointer group bg-white rounded-2xl p-6 border border-stone-200 shadow-sm hover:shadow-md hover:border-terracotta-300 transition-all">
+            <div class="w-12 h-12 rounded-2xl bg-terracotta-100 text-terracotta-700 flex items-center justify-center mb-4 group-hover:bg-terracotta-600 group-hover:text-white transition-colors">
+              <i data-lucide="mountain-snow" class="w-6 h-6"></i>
+            </div>
+            <h3 class="font-serif text-xl font-bold text-stone-900 mb-2">Valley Rim Hiking</h3>
+            <p class="text-sm text-stone-600 mb-4">Detailed trail guides for Champadevi, Shivapuri, Nagarjun, and Nagarkot with elevation gain and gear checklists.</p>
+            <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-terracotta-700 group-hover:translate-x-1 transition-transform">
+              Explore Trails <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </span>
+          </div>
+
+          <div onclick="switchTab('map')" class="cursor-pointer group bg-white rounded-2xl p-6 border border-stone-200 shadow-sm hover:shadow-md hover:border-forest-300 transition-all">
+            <div class="w-12 h-12 rounded-2xl bg-stone-100 text-stone-800 flex items-center justify-center mb-4 group-hover:bg-stone-800 group-hover:text-white transition-colors">
+              <i data-lucide="map-pinned" class="w-6 h-6"></i>
+            </div>
+            <h3 class="font-serif text-xl font-bold text-stone-900 mb-2">Interactive Valley Map</h3>
+            <p class="text-sm text-stone-600 mb-4">Visualize heritage sites, route polylines, hiking trailheads, and nearby attractions across Kathmandu Valley.</p>
+            <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-stone-800 group-hover:translate-x-1 transition-transform">
+              Open Map <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Featured Destinations Grid -->
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-terracotta-600">Cultural & Scenic Gems</span>
+            <h2 class="font-serif text-2xl sm:text-3xl font-bold text-stone-900 mt-1">Popular Valley Destinations</h2>
+          </div>
+          <button onclick="switchTab('destinations')" class="text-sm font-semibold text-forest-700 hover:text-forest-900 inline-flex items-center gap-1">
+            View all 10 destinations <i data-lucide="chevron-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <div id="home-featured-destinations" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+      <!-- Featured Hiking & Adventure -->
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-forest-700">Rim Trails & Day Hikes</span>
+            <h2 class="font-serif text-2xl sm:text-3xl font-bold text-stone-900 mt-1">Hiking & Adventure Recommendations</h2>
+          </div>
+          <button onclick="switchTab('hiking')" class="text-sm font-semibold text-forest-700 hover:text-forest-900 inline-flex items-center gap-1">
+            View all trail guides <i data-lucide="chevron-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <div id="home-featured-hiking" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ==================== VIEW 2: ROUTE EXPLORER ==================== -->
+    <section id="view-routes" class="tab-view hidden py-10 sm:py-14">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        
+        <!-- Header -->
+        <div class="max-w-3xl">
+          <span class="text-xs font-bold uppercase tracking-wider text-terracotta-600">Journey Planner</span>
+          <h1 class="font-serif text-3xl sm:text-4xl font-bold text-stone-900 mt-1">Kathmandu Valley Route Explorer</h1>
+          <p class="text-stone-600 mt-2 text-sm sm:text-base">
+            Select your starting hub, destination, and transport mode to inspect distances, corridor landmarks, road notes, estimated NPR costs, and nearby places worth adding to your trip.
+          </p>
+        </div>
+
+        <!-- Route Configuration Card -->
+        <div class="bg-white rounded-3xl p-6 sm:p-8 border border-stone-200 shadow-sm">
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-5 items-end">
+            
+            <!-- Starting Location -->
+            <div class="md:col-span-4 space-y-2">
+              <label for="route-origin" class="block text-xs font-bold uppercase tracking-wider text-stone-600">
+                Starting Location
+              </label>
+              <div class="relative">
+                <select id="route-origin" onchange="calculateAndRenderRoute()" class="w-full appearance-none rounded-xl border border-stone-300 bg-stone-50 px-4 py-3.5 pr-10 text-sm font-semibold text-stone-900 focus:border-forest-600 focus:bg-white focus:outline-none">
+                  <!-- Populated by JS -->
+                </select>
+                <i data-lucide="map-pin" class="w-4 h-4 text-forest-700 absolute right-3.5 top-4 pointer-events-none"></i>
+              </div>
+            </div>
+
+            <!-- Swap Button -->
+            <div class="md:col-span-1 flex justify-center">
+              <button onclick="swapRouteLocations()" title="Swap locations" class="p-3 rounded-xl border border-stone-200 bg-stone-50 hover:bg-forest-50 hover:border-forest-300 text-stone-700 transition">
+                <i data-lucide="arrow-left-right" class="w-5 h-5"></i>
+              </button>
+            </div>
+
+            <!-- Destination -->
+            <div class="md:col-span-4 space-y-2">
+              <label for="route-destination" class="block text-xs font-bold uppercase tracking-wider text-stone-600">
+                Destination
+              </label>
+              <div class="relative">
+                <select id="route-destination" onchange="calculateAndRenderRoute()" class="w-full appearance-none rounded-xl border border-stone-300 bg-stone-50 px-4 py-3.5 pr-10 text-sm font-semibold text-stone-900 focus:border-forest-600 focus:bg-white focus:outline-none">
+                  <!-- Populated by JS -->
+                </select>
+                <i data-lucide="flag" class="w-4 h-4 text-terracotta-600 absolute right-3.5 top-4 pointer-events-none"></i>
+              </div>
+            </div>
+
+            <!-- Quick Preset Button -->
+            <div class="md:col-span-3">
+              <button onclick="calculateAndRenderRoute()" class="w-full py-3.5 px-5 rounded-xl bg-forest-800 hover:bg-forest-900 text-white font-semibold text-sm shadow-sm transition flex items-center justify-center gap-2">
+                <i data-lucide="compass" class="w-4 h-4"></i> Update Route
+              </button>
+            </div>
+          </div>
+
+          <!-- Preferred Mode of Transportation Pills -->
+          <div class="mt-6 pt-6 border-t border-stone-100">
+            <span class="block text-xs font-bold uppercase tracking-wider text-stone-600 mb-3">Preferred Mode of Transportation</span>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3" id="transport-mode-selector">
+              <button type="button" onclick="selectTransportMode('bike')" data-mode="bike" class="mode-btn flex items-center justify-center gap-2.5 p-3.5 rounded-xl border-2 border-forest-700 bg-forest-50 text-forest-900 font-semibold text-sm transition">
+                <i data-lucide="bike" class="w-5 h-5 text-forest-700"></i> Bike / Scooter
+              </button>
+              <button type="button" onclick="selectTransportMode('car')" data-mode="car" class="mode-btn flex items-center justify-center gap-2.5 p-3.5 rounded-xl border border-stone-200 bg-white text-stone-700 hover:bg-stone-50 font-semibold text-sm transition">
+                <i data-lucide="car" class="w-5 h-5 text-stone-500"></i> Car / Taxi
+              </button>
+              <button type="button" onclick="selectTransportMode('bus')" data-mode="bus" class="mode-btn flex items-center justify-center gap-2.5 p-3.5 rounded-xl border border-stone-200 bg-white text-stone-700 hover:bg-stone-50 font-semibold text-sm transition">
+                <i data-lucide="bus" class="w-5 h-5 text-stone-500"></i> Public Bus / Micro
+              </button>
+              <button type="button" onclick="selectTransportMode('walking')" data-mode="walking" class="mode-btn flex items-center justify-center gap-2.5 p-3.5 rounded-xl border border-stone-200 bg-white text-stone-700 hover:bg-stone-50 font-semibold text-sm transition">
+                <i data-lucide="footprints" class="w-5 h-5 text-stone-500"></i> Walking
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dynamic Route Results Output -->
+        <div id="route-results-container" class="space-y-8">
+          <!-- Populated dynamically via JS -->
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 3: DESTINATIONS DIRECTORY ==================== -->
+    <section id="view-destinations" class="tab-view hidden py-10 sm:py-14">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-terracotta-600">Kathmandu Valley Guidebook</span>
+            <h1 class="font-serif text-3xl sm:text-4xl font-bold text-stone-900 mt-1">Explore Valley Destinations</h1>
+            <p class="text-stone-600 mt-2 text-sm sm:text-base max-w-2xl">
+              Comprehensive cultural, historical, and practical visitor guides across Kathmandu, Lalitpur, and Bhaktapur districts.
+            </p>
+          </div>
+
+          <!-- Category Filter -->
+          <div class="flex flex-wrap gap-2" id="destination-filters">
+            <button onclick="filterDestinations('all')" data-filter="all" class="dest-filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-forest-800 text-white transition">All Places</button>
+            <button onclick="filterDestinations('UNESCO Heritage')" data-filter="UNESCO Heritage" class="dest-filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white border border-stone-200 text-stone-700 hover:bg-stone-50 transition">UNESCO Heritage</button>
+            <button onclick="filterDestinations('Spiritual & Temple')" data-filter="Spiritual & Temple" class="dest-filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white border border-stone-200 text-stone-700 hover:bg-stone-50 transition">Temples & Spiritual</button>
+            <button onclick="filterDestinations('Nature & Viewpoint')" data-filter="Nature & Viewpoint" class="dest-filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white border border-stone-200 text-stone-700 hover:bg-stone-50 transition">Nature & Hills</button>
+          </div>
+        </div>
+
+        <!-- Destination Cards Grid -->
+        <div id="all-destinations-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
+          <!-- Populated dynamically via JS -->
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 4: HIKING & ADVENTURE GUIDE ==================== -->
+    <section id="view-hiking" class="tab-view hidden py-10 sm:py-14">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        
+        <div class="max-w-3xl">
+          <span class="text-xs font-bold uppercase tracking-wider text-forest-700">Rim Trails & Day Treks</span>
+          <h1 class="font-serif text-3xl sm:text-4xl font-bold text-stone-900 mt-1">Hiking & Adventure Guide</h1>
+          <p class="text-stone-600 mt-2 text-sm sm:text-base">
+            Explore forested ridges surrounding Kathmandu Valley. Select any hike for full elevation data, uphill/downhill duration estimates, trailhead access, water availability, and interactive gear checklists.
+          </p>
+        </div>
+
+        <!-- Trail Cards -->
+        <div id="hiking-trails-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <!-- Populated dynamically via JS -->
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 5: INTERACTIVE MAP ==================== -->
+    <section id="view-map" class="tab-view hidden py-8 sm:py-10">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-5">
+        
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div>
+            <h1 class="font-serif text-2xl sm:text-3xl font-bold text-stone-900">Kathmandu Valley Interactive Map</h1>
+            <p class="text-xs sm:text-sm text-stone-600">Click any marker to inspect details, launch guides, or view the currently selected route corridor.</p>
+          </div>
+
+          <!-- Map Layer Filter Toggles -->
+          <div class="flex flex-wrap items-center gap-2">
+            <button onclick="setMapFilter('all')" data-mapfilter="all" class="map-filter-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-forest-800 text-white shadow-sm transition">
+              All Locations
+            </button>
+            <button onclick="setMapFilter('heritage')" data-mapfilter="heritage" class="map-filter-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-white border border-stone-200 text-stone-700 hover:bg-stone-50 transition">
+              Destinations & Heritage
+            </button>
+            <button onclick="setMapFilter('hiking')" data-mapfilter="hiking" class="map-filter-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-white border border-stone-200 text-stone-700 hover:bg-stone-50 transition">
+              Hiking Trails
+            </button>
+            <button onclick="setMapFilter('route')" data-mapfilter="route" class="map-filter-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-white border border-stone-200 text-stone-700 hover:bg-stone-50 transition flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-terracotta-600"></span> Active Route Only
+            </button>
+          </div>
+        </div>
+
+        <!-- Map Container & Legend -->
+        <div class="bg-white rounded-3xl p-3 border border-stone-200 shadow-md">
+          <div id="interactive-map" class="w-full h-[500px] sm:h-[600px] rounded-2xl overflow-hidden bg-stone-100"></div>
+          
+          <!-- Legend Footer -->
+          <div class="mt-3 px-2 py-1.5 flex flex-wrap items-center justify-between gap-4 text-xs text-stone-600">
+            <div class="flex flex-wrap items-center gap-4">
+              <span class="inline-flex items-center gap-1.5 font-medium">
+                <span class="w-3 h-3 rounded-full bg-forest-700 inline-block"></span> Destination / Landmark
+              </span>
+              <span class="inline-flex items-center gap-1.5 font-medium">
+                <span class="w-3 h-3 rounded-full bg-terracotta-600 inline-block"></span> Hiking Trailhead / Peak
+              </span>
+              <span class="inline-flex items-center gap-1.5 font-medium">
+                <span class="w-3 h-3 rounded-full bg-amber-600 inline-block"></span> Transit Hub / Start Point
+              </span>
+              <span class="inline-flex items-center gap-1.5 font-medium">
+                <span class="w-5 h-1 bg-terracotta-600 inline-block rounded"></span> Suggested Route Corridor
+              </span>
+            </div>
+            <span class="text-stone-400">Map tiles � OpenStreetMap contributors & CARTO</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== DETAIL MODAL (DESTINATIONS & HIKING) ==================== -->
+  <div id="detail-modal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-stone-950/70 backdrop-blur-sm p-3 sm:p-6" role="dialog" aria-modal="true">
+    <div class="min-h-screen flex items-center justify-center">
+      <div class="relative bg-white w-full max-w-4xl rounded-3xl shadow-2xl border border-stone-200 overflow-hidden my-8">
+        <!-- Modal Close Button -->
+        <button onclick="closeDetailModal()" class="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-white/90 hover:bg-white text-stone-900 shadow-lg flex items-center justify-center transition" aria-label="Close modal">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+
+        <!-- Dynamic Modal Content -->
+        <div id="detail-modal-content">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-forest-950 text-stone-300 border-t border-forest-900 mt-auto">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 pb-8 border-b border-forest-900">
+        <div class="space-y-3">
+          <div class="flex items-center gap-2.5 text-white">
+            <i data-lucide="compass" class="w-6 h-6 text-terracotta-400"></i>
+            <span class="font-serif font-bold text-xl">Travel Companion</span>
+          </div>
+          <p class="text-sm text-stone-400 leading-relaxed">
+            Explore Beyond the Destination. Designed initially for Kathmandu Valley, Nepal with a modular architecture ready for Pokhara, Chitwan, Lumbini, and Himalayan regions.
+          </p>
+        </div>
+
+        <div class="space-y-2.5">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-white">Kathmandu Valley Coverage</h4>
+          <ul class="text-sm text-stone-400 space-y-1.5">
+            <li>� Kathmandu District (Thamel, Swayambhu, Bouddha, Dakshinkali)</li>
+            <li>� Lalitpur District (Patan Durbar, Chobhar, Champadevi)</li>
+            <li>� Bhaktapur District (Bhaktapur Durbar, Changunarayan, Nagarkot)</li>
+          </ul>
+        </div>
+
+        <div class="space-y-2.5">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-white">Data Accuracy Policy</h4>
+          <p class="text-xs text-stone-400 leading-relaxed">
+            Distances, travel times, and local transport fares are approximate guides based on typical valley road conditions. Live traffic, monsoon landslides, and festival diversions are not tracked in real time�always verify locally before departure.
+          </p>
+        </div>
+      </div>
+      <div class="pt-6 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-stone-500">
+        <p>� 2025 Travel Companion � Nepal Modular Travel Platform (Demo v1.0: Kathmandu Valley)</p>
+        <p>Architecture: Extensible District Schema (`NEPAL_TRAVEL_DB.regions`)</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==================== MODULAR TRAVEL DATABASE & APPLICATION LOGIC ==================== -->
+  <script>
+    /**
+     * MODULAR TRAVEL DATABASE ARCHITECTURE
+     * Structured by region/district so Pokhara, Chitwan, Mustang, etc.,
+     * can be seamlessly appended to `NEPAL_TRAVEL_DB.regions` in future phases.
+     */
+    const NEPAL_TRAVEL_DB = {
+      activeRegion: 'kathmandu_valley',
+      regions: {
+        kathmandu_valley: {
+          meta: {
+            id: 'kathmandu_valley',
+            name: 'Kathmandu Valley',
+            districts: ['Kathmandu', 'Lalitpur', 'Bhaktapur'],
+            averageElevationMeters: 1400,
+            currency: 'NPR (Nepalese Rupee)'
+          },
+
+          // Transit hubs & starting points (includes destinations too)
+          hubs: [
+            { id: 'thamel', name: 'Thamel (Tourist Hub, Kathmandu)', coords: [27.7154, 85.3123], type: 'hub', district: 'Kathmandu' },
+            { id: 'ratnapark', name: 'Ratna Park / Sundhara (Central Bus Hub)', coords: [27.7058, 85.3145], type: 'hub', district: 'Kathmandu' },
+            { id: 'airport', name: 'Tribhuvan International Airport (TIA)', coords: [27.6966, 85.3591], type: 'hub', district: 'Kathmandu' },
+            { id: 'kalanki', name: 'Kalanki Chowk (Western Ring Road)', coords: [27.6939, 85.2814], type: 'hub', district: 'Kathmandu' },
+            { id: 'satdobato', name: 'Satdobato Chowk (Southern Ring Road)', coords: [27.6588, 85.3247], type: 'hub', district: 'Lalitpur' },
+            { id: 'patan', name: 'Patan Durbar Square (Lalitpur)', coords: [27.6727, 85.3253], type: 'destination', district: 'Lalitpur' },
+            { id: 'bhaktapur', name: 'Bhaktapur Durbar Square', coords: [27.6721, 85.4283], type: 'destination', district: 'Bhaktapur' },
+            { id: 'boudhanath', name: 'Boudhanath Stupa', coords: [27.7215, 85.3620], type: 'destination', district: 'Kathmandu' },
+            { id: 'swayambhunath', name: 'Swayambhunath (Monkey Temple)', coords: [27.7149, 85.2904], type: 'destination', district: 'Kathmandu' },
+            { id: 'dakshinkali', name: 'Dakshinkali Temple', coords: [27.6064, 85.2647], type: 'destination', district: 'Kathmandu' },
+            { id: 'pharping', name: 'Pharping & Shesh Narayan Temple', coords: [27.6169, 85.2711], type: 'destination', district: 'Kathmandu' },
+            { id: 'chobhar_taudaha', name: 'Chobhar Gorge & Taudaha Lake', coords: [27.6486, 85.2842], type: 'destination', district: 'Kathmandu' },
+            { id: 'nagarkot', name: 'Nagarkot Viewpoint', coords: [27.7174, 85.5200], type: 'destination', district: 'Bhaktapur' },
+            { id: 'chandragiri', name: 'Chandragiri Hills (Thankot)', coords: [27.6744, 85.2133], type: 'destination', district: 'Kathmandu' },
+            { id: 'budhanilkantha', name: 'Budhanilkantha Temple', coords: [27.7782, 85.3624], type: 'destination', district: 'Kathmandu' }
+          ],
+
+          // Detailed Destinations Database
+          destinations: {
+            dakshinkali: {
+              id: 'dakshinkali',
+              name: 'Dakshinkali Temple',
+              tagline: 'Sacred forest shrine of Goddess Kali in the southern valley hills',
+              category: 'Spiritual & Temple',
+              district: 'Kathmandu (Southern Rim)',
+              coords: [27.6064, 85.2647],
+              elevation: '1,510 m (approx.)',
+              image: 'https://images.unsplash.com/photo-1605640840605-14ac1855827b?auto=format&fit=crop&w=1200&q=80',
+              introHistory: 'Located in a forested ravine about 22 km south of central Kathmandu, Dakshinkali is one of Nepal�s most important Hindu temples dedicated to Goddess Kali. Historically patronized by the Malla kings, the open-air stone shrine sits at the confluence of two sacred streams.',
+              whyFamous: 'Renowned for vibrant Tuesday and Saturday morning Hindu worship rituals, traditional animal sacrifices offered to Kali, and its lush, atmospheric gorge setting.',
+              mainAttractions: [
+                'Main open-air shrine of Goddess Dakshinkali',
+                'Confluence of the Purnavati and Uddharavati streams',
+                'Surrounding pine and broadleaf forest trails',
+                'Traditional Newar and Tamang market stalls along the approach'
+              ],
+              nearbyPlaces: ['pharping', 'chobhar_taudaha', 'champadevi'],
+              activities: ['Cultural & religious observation', 'Short forest walks', 'Combining with Pharping monastery visits'],
+              bestTimeToVisit: 'October to April (clear weather). Saturdays and Tuesdays are busiest with local devotees; weekdays offer a quieter visit.',
+              timeRequired: '1.5 to 2.5 hours (excluding transit)',
+              entryFees: {
+                status: 'verified',
+                details: 'Free entry to the temple courtyard for all visitors. Note: Non-Hindus may be asked not to enter the immediate inner sanctum during active rituals.'
+              },
+              foodAccommodation: 'Local tea shops and small eateries near the parking area serve sel roti, chiya (milk tea), and dal bhat. Limited homestays/resorts in nearby Pharping and Hattiban; most travelers stay in Kathmandu.',
+              safetyTips: [
+                'Respect local religious customs; ask before photographing rituals or devotees.',
+                'Stone steps near the temple become wet and slippery�wear shoes with good grip.',
+                'Watch out for mischievous monkeys near food stalls.'
+              ]
+            },
+
+            pharping: {
+              id: 'pharping',
+              name: 'Pharping & Shesh Narayan Temple',
+              tagline: 'Ancient Newar town, Guru Rinpoche meditation caves, and cliffside shrines',
+              category: 'Spiritual & Temple',
+              district: 'Kathmandu (Southern Rim)',
+              coords: [27.6169, 85.2711],
+              elevation: '1,550 m (approx.)',
+              image: 'https://images.unsplash.com/photo-1585016495481-91613a3ab1bc?auto=format&fit=crop&w=1200&q=80',
+              introHistory: 'Pharping is an ancient Newar settlement perched on the southern edge of Kathmandu Valley. It is deeply sacred in Tibetan Buddhism as the place where Padmasambhava (Guru Rinpoche) attained enlightenment in the Asura Cave, and equally revered by Hindus for the cliff-hugged Shesh Narayan Temple.',
+              whyFamous: 'A remarkable spiritual crossroads where major Tibetan Buddhist monasteries stand steps away from ancient Licchavi-era Hindu shrines.',
+              mainAttractions: [
+                'Asura Cave (Upper Yanglesh�) & Yanglesh� Cave',
+                'Shesh Narayan Temple & sacred spring ponds at the cliff base',
+                'Rigon Tashi Choeling & Neydo Tashi Choling Monasteries',
+                'Historic Newar brick alleys of old Pharping bazaar'
+              ],
+              nearbyPlaces: ['dakshinkali', 'chobhar_taudaha', 'champadevi'],
+              activities: ['Monastery & cave pilgrimage', 'Heritage village walk', 'Peaceful meditation retreats'],
+              bestTimeToVisit: 'Year-round, with crisp mountain views from October to March.',
+              timeRequired: '2 to 3 hours',
+              entryFees: {
+                status: 'verified',
+                details: 'Free entry to Shesh Narayan Temple, caves, and monasteries (voluntary donations welcome).'
+              },
+              foodAccommodation: 'Monastery guesthouses (e.g., Neydo) and Hattiban Resort nearby offer peaceful overnight stays. Simple local restaurants in Pharping bazaar.',
+              safetyTips: [
+                'Dress modestly (cover shoulders and knees) when entering monasteries and caves.',
+                'Remove shoes before entering prayer halls.'
+              ]
+            },
+
+            chobhar_taudaha: {
+              id: 'chobhar_taudaha',
+              name: 'Chobhar Gorge & Taudaha Lake',
+              tagline: 'Mythological birthplace of Kathmandu Valley and serene birdwatching lake',
+              category: 'Nature & Viewpoint',
+              district: 'Kathmandu / Lalitpur Border',
+              coords: [27.6486, 85.2842],
+              elevation: '1,310 m (approx.)',
+              image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80',
+              introHistory: 'According to valley legend, Bodhisattva Manjushree cut the limestone gorge at Chobhar with his flaming sword to drain the prehistoric lake that covered Kathmandu Valley. Taudaha Lake just below is said to be the remaining refuge of Karkotaka, the Serpent King.',
+              whyFamous: 'Dramatic limestone gorge over the Bagmati River paired with Taudaha, the only major natural lake remaining in Kathmandu Valley.',
+              mainAttractions: [
+                'Chobhar Gorge suspension bridge and narrow canyon',
+                'Adinath Lokeshwar Temple on Chobhar hilltop',
+                'Taudaha Lake wetland and migratory bird habitat',
+                'Jal Binayak Temple near the gorge base'
+              ],
+              nearbyPlaces: ['pharping', 'dakshinkali', 'patan'],
+              activities: ['Birdwatching at Taudaha', 'Short hilltop heritage walk', 'Sunset photography'],
+              bestTimeToVisit: 'November to February for migratory waterfowl at Taudaha; clear afternoons for Himalayan views from Adinath Temple.',
+              timeRequired: '1.5 to 2 hours',
+              entryFees: {
+                status: 'verified',
+                details: 'Nominal conservation/parking fee at Taudaha Lake (approx. NPR 20�50); temples are free.'
+              },
+              foodAccommodation: 'Several lakeside cafes and restaurants around Taudaha serve grilled fish, momos, and coffee with water views.',
+              safetyTips: [
+                'Swimming and boating are strictly prohibited in Taudaha Lake due to religious sanctity.',
+                'Stay behind safety railings along the steep Chobhar Gorge cliffs.'
+              ]
+            },
+
+            bhaktapur: {
+              id: 'bhaktapur',
+              name: 'Bhaktapur Durbar Square',
+              tagline: 'Living museum of medieval Newar art, pagoda architecture, and pottery',
+              category: 'UNESCO Heritage',
+              district: 'Bhaktapur',
+              coords: [27.6721, 85.4283],
+              elevation: '1,341 m',
+              image: 'https://images.unsplash.com/photo-1558799401-1dcba79834c2?auto=format&fit=crop&w=1200&q=80',
+              introHistory: 'Founded in the 12th century and flourishing as an independent Malla kingdom until 1769, Bhaktapur ("City of Devotees") preserves the best-maintained medieval urban fabric in Nepal, largely pedestrian-only inside its core squares.',
+              whyFamous: 'Iconic 55-Window Palace, towering 5-story Nyatapola Temple, traditional pottery squares, and famous Juju Dhau (King Curd).',
+              mainAttractions: [
+                '55-Window Palace & Golden Gate (Sun Dhoka)',
+                'Nyatapola Temple & Bhairavnath Temple at Taumadhi Square',
+                'Dattatreya Square & Peacock Window',
+                'Pottery Square (Talako) with sun-drying clay pots'
+              ],
+              nearbyPlaces: ['nagarkot', 'patan', 'boudhanath'],
+              activities: ['Architecture & heritage walking tour', 'Pottery making workshops', 'Tasting Juju Dhau & Newari Bara'],
+              bestTimeToVisit: 'October to April; early mornings (7:00�9:30 AM) offer golden light and local morning rituals before tour buses arrive.',
+              timeRequired: '3 to 5 hours',
+              entryFees: {
+                status: 'verified',
+                details: 'Verified Municipality Rates: Foreign Nationals ~NPR 1,800 (or USD 15); SAARC & Chinese Nationals ~NPR 500; Nepali Citizens Free.'
+              },
+              foodAccommodation: 'Numerous heritage boutique guesthouses inside the old town and rooftop cafes overlooking Taumadhi & Durbar Squares.',
+              safetyTips: [
+                'Keep your entry ticket handy�inspectors check tickets between interconnected squares.',
+                'Brick-paved lanes can be uneven; wear comfortable walking shoes.'
+              ]
+            },
+
+            patan: {
+              id: 'patan',
+              name: 'Patan Durbar Square',
+              tagline: 'Lalitpur�s historic royal plaza renowned for fine metalwork and stone temples',
+              category: 'UNESCO Heritage',
+              district: 'Lalitpur',
+              coords: [27.6727, 85.3253],
+              elevation: '1,324 m',
+              image: 'https://images.unsplash.com/photo-1623492701902-47dc207df5dc?auto=format&fit=crop&w=1200&q=80',
+              introHistory: 'Known historically as Yala, Patan is the oldest of the three royal cities in Kathmandu Valley. Its Durbar Square is an extraordinary concentration of Newar architecture crafted largely during the 16th�18th centuries.',
+              whyFamous: 'The Patan Museum (one of South Asia�s finest), the Shikhara-style Krishna Mandir, and hidden Buddhist bahals (courtyards) like the Golden Temple.',
+              mainAttractions: [
+                'Patan Museum & Royal Courtyards (Mul Chowk, Sundari Chowk)',
+                'Krishna Mandir (carved from a single block of stone)',
+                'Hiranya Varna Mahavihar (Golden Temple)',
+                'Mahabouddha Temple & Banglamukhi area'
+              ],
+              nearbyPlaces: ['chobhar_taudaha', 'bhaktapur', 'swayambhunath'],
+              activities: ['Museum exploration', 'Courtyard & alley walking tour', 'Artisan bronze/thangka studio visits'],
+              bestTimeToVisit: 'Year-round; late afternoon light illuminates the terracotta temple facades beautifully.',
+              timeRequired: '2.5 to 4 hours',
+              entryFees: {
+                status: 'verified',
+                details: 'Verified Lalitpur Rates: Foreign Nationals NPR 1,000 (includes Patan Museum); SAARC Nationals NPR 250; Nepali Citizens Free (Museum NPR 150).'
+              },
+              foodAccommodation: 'Rich selection of heritage boutique hotels (like Traditional Homes Swotha), Newari restaurants, and specialty coffee shops.',
+              safetyTips: [
+                'Motorbikes are restricted in parts of the main square, but watch for scooters in surrounding narrow gallis (alleys).'
+              ]
+            },
+
+            boudhanath: {
+              id: 'boudhanath',
+              name: 'Boudhanath Stupa',
+              tagline: 'Colossal white mandala stupa and heart of Tibetan Buddhism in Nepal',
+              category: 'UNESCO Heritage',
+              district: 'Kathmandu',
+              coords: [27.7215, 85.3620],
+              elevation: '1,330 m',
+              image: 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1200&q=80',
+              introHistory: 'Standing on the ancient trade route from Tibet to Kathmandu, Boudhanath is one of the largest spherical stupas in the world. Following the 2015 earthquake, its spire was meticulously restored and reconsecrated in 2016.',
+              whyFamous: 'Hypnotic all-seeing Buddha eyes, clockwise kora (circumambulation) by monks and pilgrims, and glowing butter lamps at dusk.',
+              mainAttractions: [
+                'Great Stupa dome and gilded spire',
+                'Surrounding Tibetan monasteries (Gompas) like Shechen and Ka-Nying Shedrub Ling',
+                'Kora walkway lined with prayer wheels and thangka galleries'
+              ],
+              nearbyPlaces: ['budhanilkantha', 'bhaktapur', 'patan'],
+              activities: ['Evening kora walk at sunset', 'Rooftop dining overlooking the stupa', 'Thangka painting & singing bowl workshops'],
+              bestTimeToVisit: 'Late afternoon through dusk (4:30 PM � 7:00 PM) when butter lamps are lit and chanting fills the air.',
+              timeRequired: '1.5 to 2.5 hours',
+              entryFees: {
+                status: 'verified',
+                details: 'Verified Area Development Fee: Foreign Nationals NPR 400; SAARC Nationals NPR 100; Nepali Citizens Free.'
+              },
+              foodAccommodation: 'Extensive rooftop cafes serving Tibetan thukpa, laphing, momos, and international cuisine, plus boutique hotels nearby.',
+              safetyTips: [
+                'Always walk clockwise around the stupa and spin prayer wheels clockwise.',
+                'Keep valuables secure in dense evening crowds.'
+              ]
+            },
+
+            swayambhunath: {
+              id: 'swayambhunath',
+              name: 'Swayambhunath (Monkey Temple)',
+              tagline: 'Ancient hilltop stupa offering panoramic views across Kathmandu Valley',
+              category: 'UNESCO Heritage',
+              district: 'Kathmandu',
+              coords: [27.7149, 85.2904],
+              elevation: '1,420 m (approx.)',
+              image: 'https://images.unsplash.com/photo-1575986767340-5d17ae767ab0?auto=format&fit=crop&w=1200&q=80',
+              introHistory: 'Crowning a conical hill in western Kathmandu, Swayambhunath ("Self-Arisen") has mythic origins tied to the draining of the valley lake and documented history stretching back at least to the 5th century CE.',
+              whyFamous: 'Sweeping 360-degree views of Kathmandu, harmonious blend of Buddhist and Hindu shrines, and resident rhesus macaques.',
+              mainAttractions: [
+                '365-step eastern stone stairway flanked by stone guardian statues',
+                'Main Swayambhu Stupa & giant gilded Vajra',
+                'Harati Ajima Temple & Pratapapur Shikhara towers',
+                'World Peace Pond on the western approach'
+              ],
+              nearbyPlaces: ['chandragiri', 'patan', 'chobhar_taudaha'],
+              activities: ['Sunrise or sunset valley viewing', 'Climbing the eastern stairway', 'Exploring peaceful western forest paths'],
+              bestTimeToVisit: 'Early morning (6:30�8:30 AM) for clear Himalayan skyline views and morning devotees.',
+              timeRequired: '1.5 to 2 hours',
+              entryFees: {
+                status: 'verified',
+                details: 'Verified Rates: Foreign Nationals NPR 200; SAARC Nationals NPR 50; Nepali Citizens Free.'
+              },
+              foodAccommodation: 'Small cafes and souvenir shops on the hilltop terrace; major hotels are 15�20 minutes away in Thamel.',
+              safetyTips: [
+                'Do not carry visible plastic bags or food in hand�monkeys will snatch them.',
+                'Avoid direct eye contact or baring teeth at monkeys.'
+              ]
+            },
+
+            nagarkot: {
+              id: 'nagarkot',
+              name: 'Nagarkot Viewpoint',
+              tagline: 'High mountain ridge famous for sunrise over the Himalayan range',
+              category: 'Nature & Viewpoint',
+              district: 'Bhaktapur / Kavre Border',
+              coords: [27.7174, 85.5200],
+              elevation: '2,175 m (approx.)',
+              image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1200&q=80',
+              introHistory: 'Situated on the northeastern rim of Kathmandu Valley, Nagarkot served historically as a strategic fort monitoring the eastern approaches before becoming Nepal�s premier accessible Himalayan viewpoint.',
+              whyFamous: 'Broad panorama spanning Langtang, Ganesh Himal, Dorje Lakpa, and on ultra-clear winter mornings, distant Mount Everest.',
+              mainAttractions: [
+                'Nagarkot Geodetic View Tower',
+                'Buddha Peace Park & panoramic ridge trails',
+                'Trailhead for the scenic hike down to Changunarayan Temple'
+              ],
+              nearbyPlaces: ['bhaktapur', 'nagarkot_changu', 'boudhanath'],
+              activities: ['Sunrise mountain photography', 'Overnight ridge retreat', 'Day hiking to Changunarayan'],
+              bestTimeToVisit: 'October to December and February to April for crisp, cloud-free Himalayan visibility. Monsoon (June�August) is usually misty.',
+              timeRequired: 'Half-day or 1 overnight stay',
+              entryFees: {
+                status: 'verified',
+                details: 'Nagarkot Municipality Tourist Fee: Foreign Nationals ~NPR 339 (incl. VAT); SAARC ~NPR 226 (collected at checkpoint).'
+              },
+              foodAccommodation: 'Wide range of hillside resorts, boutique lodges, and budget guesthouses facing the northern mountains.',
+              safetyTips: [
+                'Temperatures drop sharply at 2,175m�bring windproof layers even in autumn/spring.',
+                'Winding mountain road has sharp bends; avoid driving in dense night fog.'
+              ]
+            },
+
+            chandragiri: {
+              id: 'chandragiri',
+              name: 'Chandragiri Hills',
+              tagline: 'Cable car ascent to a 2,551m ridge with sweeping valley and Himalayan panoramas',
+              category: 'Nature & Viewpoint',
+              district: 'Kathmandu (Southwestern Rim)',
+              coords: [27.6744, 85.2133],
+              elevation: '2,551 m',
+              image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80',
+              introHistory: 'Historically significant as the pass from which King Prithvi Narayan Shah first gazed upon the prosperous Kathmandu Valley in the 18th century before unifying Nepal.',
+              whyFamous: '2.5 km scenic cable car ride from Thankot, Bhaleshwor Mahadev Temple, and unobstructed high-altitude views from Annapurna to Everest on clear days.',
+              mainAttractions: [
+                'Chandragiri Cable Car ride (approx. 9�12 minutes)',
+                'Bhaleshwor Mahadev Temple at the summit',
+                'King Prithvi Narayan Shah statue & valley viewpoint deck'
+              ],
+              nearbyPlaces: ['swayambhunath', 'chobhar_taudaha'],
+              activities: ['Cable car excursion', 'Ridge walking & photography', 'Zipline & family park activities'],
+              bestTimeToVisit: 'Morning hours between October and March before afternoon clouds build up over the ridge.',
+              timeRequired: '3 to 4 hours (including cable car)',
+              entryFees: {
+                status: 'estimated',
+                details: 'Cable car round-trip tickets vary by nationality (approx. NPR 800�1,300 for Nepali/SAARC; approx. USD 22�25 for Foreign Nationals�verify current tariff at Thankot base station).'
+              },
+              foodAccommodation: 'Summit restaurants, food court, and the luxury Chandragiri Hills Resort at the top.',
+              safetyTips: [
+                'Check weather visibility before purchasing cable car tickets�clouds can obscure summit views.',
+                'Bring a warm jacket; the summit is noticeably colder than Kathmandu city.'
+              ]
+            },
+
+            budhanilkantha: {
+              id: 'budhanilkantha',
+              name: 'Budhanilkantha Temple',
+              tagline: 'Extraordinary 5th-century monolithic statue of Sleeping Vishnu on a cosmic serpent',
+              category: 'Spiritual & Temple',
+              district: 'Kathmandu (Northern Foothills)',
+              coords: [27.7782, 85.3624],
+              elevation: '1,440 m (approx.)',
+              image: 'https://images.unsplash.com/photo-1609766857041-ed402ea8069a?auto=format&fit=crop&w=1200&q=80',
+              introHistory: 'Nestled at the base of Shivapuri Hill, Budhanilkantha houses a 5-meter-long reclining stone sculpture of Lord Vishnu carved from a single block of black basalt during the Licchavi period (circa 5th�7th century).',
+              whyFamous: 'The largest stone carving in Nepal, appearing to float effortlessly in a recessed tank of water representing the cosmic ocean.',
+              mainAttractions: [
+                'Reclining Vishnu statue resting on the coils of Ananta (Shesha)',
+                'Sacred temple pond & daily morning priest rituals',
+                'Gateway trailhead to Shivapuri Nagarjun National Park'
+              ],
+              nearbyPlaces: ['shivapuri', 'boudhanath'],
+              activities: ['Cultural & sculptural appreciation', 'Combining with Shivapuri Peak hike'],
+              bestTimeToVisit: 'Morning (7:30�10:00 AM) during puja ceremonies.',
+              timeRequired: '1 to 1.5 hours',
+              entryFees: {
+                status: 'verified',
+                details: 'Free entry for all visitors. Note: Foreign visitors view the statue from the pond perimeter; only Hindus may step onto the inner platform.'
+              },
+              foodAccommodation: 'Local tea shops and eateries outside the temple gate; boutique wellness resorts nearby in Hattigauda/Budhanilkantha.',
+              safetyTips: [
+                'Remove leather shoes before entering the temple compound.',
+                'Photography is permitted from outside the sacred pond railing.'
+              ]
+            }
+          },
+
+          // Hiking & Adventure Trails Database
+          hikingTrails: {
+            champadevi: {
+              id: 'champadevi',
+              name: 'Champadevi Hiking',
+              subtitle: 'Panoramic southern rim ridge walk through pine forests to a sacred hilltop shrine',
+              difficulty: 'Moderate',
+              district: 'Lalitpur / Kathmandu Southern Rim',
+              coords: [27.6258, 85.2536],
+              trailheadCoords: [27.6305, 85.2692],
+              image: 'https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&w=1200&q=80',
+              startingPoints: [
+                'Hattiban Resort / Pharping Road (Most popular & gradual pine ridge route)',
+                'Bosan Danda (via Taudaha / Chobhar � steeper initial climb)',
+                'Machhegaun (Northern approach � longer & steeper)'
+              ],
+              distance: '9 to 11 km round trip (approx., depending on trailhead)',
+              uphillDuration: '2.5 to 3.5 hours (estimated)',
+              downhillDuration: '1.5 to 2.5 hours (estimated)',
+              startElevation: '1,480 m (Hattiban trailhead, approx.)',
+              summitElevation: '2,278 m (Champadevi Peak)',
+              elevationGain: '~800 m net gain',
+              viewpoints: [
+                'Champadevi Summit Shrine (2,278m) with prayer flags & stupa',
+                'Open grassy ridge saddles overlooking Pharping & Dakshinkali valley',
+                'Northern Himalayan panorama (Langtang, Ganesh Himal, Gauri Shankar, Annapurna on clear days)'
+              ],
+              attractionsAlongTrail: [
+                'Fragrant chir pine and rhododendron forest',
+                'Champadevi Temple (revered by both Hindus and Buddhists)',
+                'Optional ridge extension westwards toward Bhasmasur Hill (2,500m)'
+              ],
+              equipment: [
+                'Sturdy trail shoes or hiking boots with good tread (pine needles can be slippery)',
+                'Daypack (15�20L) with windproof/fleece layer',
+                'At least 2 liters of drinking water per person',
+                'Sun hat, sunglasses, sunscreen, and trekking poles (helpful for descent)'
+              ],
+              foodWaterAvailability: {
+                status: 'verified',
+                details: 'Shops and restaurants exist at the Hattiban/Pharping road trailhead, but there are NO permanent shops or reliable water taps along the upper ridge or summit. Carry all water and snacks from the start.'
+              },
+              safetyPrecautions: [
+                'Start early (by 7:30�8:00 AM) to enjoy clear mountain views before midday haze.',
+                'Stick to the main ridge path; side trails leading down toward Machhegaun can be confusing.',
+                'Descend well before dusk as the forest canopy gets dark quickly.'
+              ],
+              bestSeason: 'October�December and February�April (spring brings blooming rhododendrons).'
+            },
+
+            shivapuri: {
+              id: 'shivapuri',
+              name: 'Shivapuri Peak Hike',
+              subtitle: 'The second-highest peak around Kathmandu Valley inside Shivapuri Nagarjun National Park',
+              difficulty: 'Moderate to Challenging',
+              district: 'Kathmandu (Northern Rim)',
+              coords: [27.8136, 85.3858],
+              trailheadCoords: [27.7915, 85.3672],
+              image: 'https://images.unsplash.com/photo-1454496522488-7a8e488e8606?auto=format&fit=crop&w=1200&q=80',
+              startingPoints: [
+                'Panimuhan Army Checkpost (1.5 km uphill north of Budhanilkantha Temple)'
+              ],
+              distance: '13 to 15 km round trip (approx.)',
+              uphillDuration: '3.5 to 4.5 hours (estimated)',
+              downhillDuration: '2.5 to 3 hours (estimated)',
+              startElevation: '1,580 m (Panimuhan Checkpost, approx.)',
+              summitElevation: '2,732 m (Shivapuri Peak)',
+              elevationGain: '~1,150 m net gain',
+              viewpoints: [
+                'Nagi Gompa (2,330m) Buddhist nunnery terrace overlooking Kathmandu',
+                'Baghdwar (source of the sacred Bagmati River)',
+                'Shivapuri Summit (2,732m) facing Langtang Lirung and Ganesh Himal'
+              ],
+              attractionsAlongTrail: [
+                'Dense oak, rhododendron, and Himalayan chestnut forests',
+                'Nagi Gompa monastery',
+                'Baghdwar tiger-spout spring',
+                'Rich birdlife (over 300 bird species recorded in the park)'
+              ],
+              equipment: [
+                'Broken-in hiking boots (long stone-staircase sections)',
+                '2 to 2.5 liters of water & high-energy trail lunch',
+                'Warm jacket (summit at 2,732m is cool and breezy)',
+                'Valid ID / Passport for National Park entry permit'
+              ],
+              foodWaterAvailability: {
+                status: 'verified',
+                details: 'National Park entry permit required at Panimuhan (approx. NPR 1,000 Foreigners / NPR 600 SAARC / NPR 100 Nepali). Basic tea/noodles sometimes available at Nagi Gompa, but NO shops on the upper summit trail�pack your own lunch and water.'
+              },
+              safetyPrecautions: [
+                'Check-in and check-out at the Nepal Army checkpoint at Panimuhan is mandatory.',
+                'Watch for leeches during humid monsoon months (June�September).',
+                'Keep a steady pace on the steep stone steps above Nagi Gompa.'
+              ],
+              bestSeason: 'October�December and March�May.'
+            },
+
+            nagarjun: {
+              id: 'nagarjun',
+              name: 'Nagarjun (Jamacho) Hill Hike',
+              subtitle: 'Accessible forest climb to Jamacho Gumba monastery overlooking Swayambhu & the valley',
+              difficulty: 'Easy to Moderate',
+              district: 'Kathmandu (Northwestern Rim)',
+              coords: [27.7438, 85.2662],
+              trailheadCoords: [27.7351, 85.2917],
+              image: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1200&q=80',
+              startingPoints: [
+                'Fulbari Gate (Balaju Bypass / Ichangu Narayan side, 3 km northwest of Thamel)'
+              ],
+              distance: '7 to 8 km round trip (approx.)',
+              uphillDuration: '2 to 2.5 hours (estimated)',
+              downhillDuration: '1.5 hours (estimated)',
+              startElevation: '1,400 m (Fulbari Gate, approx.)',
+              summitElevation: '2,128 m (Jamacho Peak)',
+              elevationGain: '~728 m net gain',
+              viewpoints: [
+                'Jamacho Gumba rooftop & viewing tower (2,128m)',
+                'Bird�s-eye perspective of Swayambhunath hill and Kathmandu city'
+              ],
+              attractionsAlongTrail: [
+                'Protected Nagarjun Forest Reserve (part of Shivapuri-Nagarjun National Park)',
+                'Jamacho Monastery and sacred Padmasambhava cave',
+                'Forest wildlife including barking deer and langur monkeys'
+              ],
+              equipment: [
+                'Comfortable trail shoes or sneakers with grip',
+                '1.5 to 2 liters of water & packed snacks',
+                'Light rain/wind jacket',
+                'ID/Passport for National Park permit at Fulbari Gate'
+              ],
+              foodWaterAvailability: {
+                status: 'verified',
+                details: 'Zero shops or restaurants inside the Nagarjun forest gate or at Jamacho summit. Buy all water and lunch near Balaju/Fulbari Gate before entering.'
+              },
+              safetyPrecautions: [
+                'National Park gate closes by late afternoon (typically around 4:00�5:00 PM)�start in the morning.',
+                'Do not feed monkeys near the monastery.'
+              ],
+              bestSeason: 'Year-round (best visibility October to April).'
+            },
+
+            nagarkot_changu: {
+              id: 'nagarkot_changu',
+              name: 'Nagarkot � Changunarayan Ridge Trail',
+              subtitle: 'Gentle downhill cultural trek linking Himalayan viewpoints to Nepal�s oldest temple',
+              difficulty: 'Easy',
+              district: 'Bhaktapur',
+              coords: [27.7163, 85.4278],
+              trailheadCoords: [27.7174, 85.5200],
+              image: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1200&q=80',
+              startingPoints: [
+                'Nagarkot Bazaar / Hotel Ridge (2,100m) walking westwards to Changunarayan Temple (1,541m)'
+              ],
+              distance: '11 to 13 km one-way (approx.)',
+              uphillDuration: '0.5 to 1 hour (mostly rolling/downhill)',
+              downhillDuration: '3 to 4 hours total walking time (estimated)',
+              startElevation: '2,100 m (Nagarkot)',
+              summitElevation: '1,541 m (Changunarayan Temple)',
+              elevationGain: 'Net descent of ~560 m with gentle undulations',
+              viewpoints: [
+                'Nagarkot western ridge overlooking Sankhu and Kathmandu Valley',
+                'Telkot ridge viewpoints',
+                'Changunarayan hilltop courtyard (UNESCO World Heritage Site)'
+              ],
+              attractionsAlongTrail: [
+                'Traditional Tamang and Chhetri farming villages & terraced fields',
+                'Telkot pine forest ridge',
+                'Changunarayan Temple (5th-century Licchavi stone inscriptions and woodcarvings)'
+              ],
+              equipment: [
+                'Comfortable walking shoes',
+                'Sun protection (open ridge sections have direct sun)',
+                '1.5 liters of water'
+              ],
+              foodWaterAvailability: {
+                status: 'verified',
+                details: 'Good availability�tea shops and local eateries are found in Nagarkot, along the Telkot road junction, and in Changunarayan village.'
+              },
+              safetyPrecautions: [
+                'At Telkot junction, follow signs onto the pedestrian ridge path rather than the dusty motor road.',
+                'Changunarayan Temple charges a UNESCO entry fee (approx. NPR 400 Foreigners / NPR 100 SAARC).'
+              ],
+              bestSeason: 'October to May.'
+            }
+          },
+
+          // Curated Route Matrix (Realistic Kathmandu Valley corridors)
+          // For pairs not explicitly listed, a smart corridor synthesizer computes realistic valley estimates
+          routes: {
+            'thamel__dakshinkali': {
+              distanceKm: '22.5 km (approx.)',
+              durations: {
+                bike: '50 � 70 mins (estimated)',
+                car: '55 � 80 mins (estimated)',
+                bus: '85 � 115 mins (estimated, requires change at Ratna Park/Balkhu)',
+                walking: '4.5 � 5.5 hours (estimated)'
+              },
+              costs: {
+                bike: 'NPR 250 � 350 (est. fuel) / NPR 450 � 650 (ride-share bike)',
+                car: 'NPR 1,400 � 2,000 one-way (estimated taxi / ride-share)',
+                bus: 'NPR 60 � 100 total (estimated local bus fare via Balkhu)',
+                walking: 'Free'
+              },
+              corridor: 'Thamel ? Kalimati / Tripureshwor ? Balkhu Chowk ? Chobhar ? Taudaha ? Pharping ? Dakshinkali',
+              landmarks: ['Tripureshwor Mahadev', 'Balkhu Fruit Market', 'Chobhar Gorge', 'Taudaha Lake', 'Pharping Bazaar'],
+              roadConditions: {
+                verified: 'Paved blacktop road from Thamel to Balkhu; winding two-lane hill highway from Chobhar to Dakshinkali.',
+                unavailable: 'Live traffic congestion at Kalimati/Balkhu and Saturday temple rush delays are not tracked in real time.'
+              },
+              recommendedStops: [
+                { name: 'Taudaha Lake', reason: 'Scenic lakeside tea break & birdwatching halfway along the route', destId: 'chobhar_taudaha' },
+                { name: 'Pharping & Shesh Narayan', reason: 'Visit Guru Rinpoche�s meditation cave just 1.5 km before Dakshinkali', destId: 'pharping' }
+              ],
+              nearbySuggestions: ['pharping', 'chobhar_taudaha', 'champadevi'],
+              waypoints: [
+                [27.7154, 85.3123],
+                [27.6945, 85.3012],
+                [27.6845, 85.2975],
+                [27.6486, 85.2842],
+                [27.6169, 85.2711],
+                [27.6064, 85.2647]
+              ]
+            },
+
+            'thamel__bhaktapur': {
+              distanceKm: '15.5 km (approx.)',
+              durations: {
+                bike: '35 � 55 mins (estimated)',
+                car: '40 � 65 mins (estimated)',
+                bus: '55 � 80 mins (estimated)',
+                walking: '3.2 � 4 hours (estimated)'
+              },
+              costs: {
+                bike: 'NPR 150 � 250 (est. fuel) / NPR 300 � 450 (ride-share bike)',
+                car: 'NPR 900 � 1,400 one-way (estimated taxi / ride-share)',
+                bus: 'NPR 45 � 70 (estimated Bhaktapur express/local bus from Ratna Park)',
+                walking: 'Free'
+              },
+              corridor: 'Thamel ? Jamal / Ratna Park ? Maitighar ? Tinkune ? Koteshwor ? Lokanthali ? Sallaghari ? Bhaktapur Durbar Square',
+              landmarks: ['Maitighar Mandala', 'Tinkune Park', 'Koteshwor Junction', 'Siddha Pokhari (Bhaktapur)'],
+              roadConditions: {
+                verified: 'Wide 6-lane Araniko Highway from Maitighar to Sallaghari; short brick/paved approach to Durbar Square.',
+                unavailable: 'Peak-hour bottlenecks at Koteshwor and Jadibuti vary significantly by time of day.'
+              },
+              recommendedStops: [
+                { name: 'Siddha Pokhari', reason: 'Historic 15th-century rectangular pond right near the western entrance of Bhaktapur', destId: 'bhaktapur' },
+                { name: 'Boudhanath Stupa (Detour)', reason: 'Worth combining on the return loop via Sinamangal/Chabahil', destId: 'boudhanath' }
+              ],
+              nearbySuggestions: ['nagarkot', 'boudhanath', 'patan'],
+              waypoints: [
+                [27.7154, 85.3123],
+                [27.6940, 85.3210],
+                [27.6848, 85.3489],
+                [27.6775, 85.3496],
+                [27.6730, 85.3880],
+                [27.6721, 85.4283]
+              ]
+            },
+
+            'thamel__nagarkot': {
+              distanceKm: '31.5 km (approx.)',
+              durations: {
+                bike: '70 � 95 mins (estimated)',
+                car: '75 � 105 mins (estimated)',
+                bus: '110 � 140 mins (estimated, transfer at Kamalbinayak, Bhaktapur)',
+                walking: '6.5 � 8 hours (estimated)'
+              },
+              costs: {
+                bike: 'NPR 350 � 500 (est. fuel)',
+                car: 'NPR 2,200 � 3,200 one-way (estimated private taxi)',
+                bus: 'NPR 110 � 160 total (estimated Ratna Park ? Bhaktapur ? Nagarkot bus)',
+                walking: 'Free'
+              },
+              corridor: 'Thamel ? Koteshwor ? Bhaktapur (Kamalbinayak) ? Kharipati ? Telkot ? Nagarkot Ridge',
+              landmarks: ['Bhaktapur Old Town', 'Nepal Military Academy (Kharipati)', 'Telkot Pine Forest'],
+              roadConditions: {
+                verified: 'Paved highway to Bhaktapur followed by a winding, steady mountain climb from Kamalbinayak to Nagarkot.',
+                unavailable: 'Live fog visibility and occasional road widening work along the Telkot�Nagarkot stretch are not tracked live.'
+              },
+              recommendedStops: [
+                { name: 'Bhaktapur Durbar Square', reason: 'Ideal lunch and heritage stop halfway up or on the descent', destId: 'bhaktapur' },
+                { name: 'Changunarayan Trailhead', reason: 'Start a scenic downhill walk from Nagarkot back toward Bhaktapur', destId: 'nagarkot' }
+              ],
+              nearbySuggestions: ['bhaktapur', 'nagarkot_changu', 'boudhanath'],
+              waypoints: [
+                [27.7154, 85.3123],
+                [27.6775, 85.3496],
+                [27.6752, 85.4368],
+                [27.6980, 85.4750],
+                [27.7174, 85.5200]
+              ]
+            },
+
+            'thamel__chandragiri': {
+              distanceKm: '16.0 km (approx.)',
+              durations: {
+                bike: '35 � 55 mins (estimated)',
+                car: '40 � 65 mins (estimated)',
+                bus: '60 � 85 mins (estimated)',
+                walking: '3.2 � 4 hours (estimated)'
+              },
+              costs: {
+                bike: 'NPR 150 � 250 (est. fuel) / NPR 300 � 450 (ride-share bike)',
+                car: 'NPR 950 � 1,500 one-way (estimated taxi / ride-share)',
+                bus: 'NPR 45 � 75 (estimated Thankot bus from Ratna Park)',
+                walking: 'Free (cable car ticket separate)'
+              },
+              corridor: 'Thamel ? Kalimati ? Kalanki Chowk ? Naikap ? Thankot Checkpost ? Chandragiri Cable Car Base',
+              landmarks: ['Kalanki Underpass', 'Naikap Ridge', 'Historic Thankot Gateway'],
+              roadConditions: {
+                verified: 'Paved urban highway via Kalanki to Thankot, plus a short paved access road to the cable car station.',
+                unavailable: 'Prithvi Highway freight traffic congestion near Kalanki�Thankot varies throughout the day.'
+              },
+              recommendedStops: [
+                { name: 'Swayambhunath Stupa', reason: 'Just a 10-minute detour off the route near Sitapaila/Kalanki', destId: 'swayambhunath' }
+              ],
+              nearbySuggestions: ['swayambhunath', 'chobhar_taudaha'],
+              waypoints: [
+                [27.7154, 85.3123],
+                [27.6939, 85.2814],
+                [27.6885, 85.2450],
+                [27.6744, 85.2133]
+              ]
+            }
+          }
+        }
+      }
+    };
+
+    // Application State
+    let appState = {
+      activeTab: 'home',
+      originId: 'thamel',
+      destinationId: 'dakshinkali',
+      transportMode: 'bike',
+      mapInstance: null,
+      mapLayerGroup: null,
+      routeLayerGroup: null,
+      mapFilter: 'all',
+      checkedEquipment: {}
+    };
+
+    // ==================== INITIALIZATION ====================
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      populateRouteSelects();
+      renderHomeFeatured();
+      renderAllDestinations('all');
+      renderHikingTrails();
+      calculateAndRenderRoute();
+
+      // Close hero search dropdown when clicking outside
+      document.addEventListener('click', (e) => {
+        const searchBox = document.getElementById('hero-search-input');
+        const dropdown = document.getElementById('hero-search-results');
+        if (searchBox && dropdown && !searchBox.contains(e.target) && !dropdown.contains(e.target)) {
+          dropdown.classList.add('hidden');
+        }
+      });
+    });
+
+    // ==================== NAVIGATION & VIEW SWITCHING ====================
+    function switchTab(tabName) {
+      appState.activeTab = tabName;
+
+      // Hide all views
+      document.querySelectorAll('.tab-view').forEach(el => el.classList.add('hidden'));
+      const targetView = document.getElementById(`view-${tabName}`);
+      if (targetView) targetView.classList.remove('hidden');
+
+      // Update nav button active states
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        if (btn.dataset.nav === tabName) {
+          btn.classList.remove('text-stone-600', 'text-stone-700', 'hover:bg-stone-100');
+          btn.classList.add('bg-forest-50', 'text-forest-800');
+        } else {
+          btn.classList.remove('bg-forest-50', 'text-forest-800');
+          btn.classList.add('text-stone-600', 'hover:bg-stone-100');
+        }
+      });
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // Initialize or refresh Leaflet map when Map tab opens
+      if (tabName === 'map') {
+        setTimeout(() => {
+          initOrUpdateMap();
+        }, 100);
+      }
+
+      lucide.createIcons();
+    }
+
+    function toggleMobileMenu() {
+      const menu = document.getElementById('mobile-menu');
+      menu.classList.toggle('hidden');
+    }
+
+    // ==================== HERO INSTANT SEARCH ====================
+    function handleHeroSearch(query) {
+      const dropdown = document.getElementById('hero-search-results');
+      const q = query.trim().toLowerCase();
+
+      if (!q) {
+        dropdown.classList.add('hidden');
+        return;
+      }
+
+      const region = NEPAL_TRAVEL_DB.regions[NEPAL_TRAVEL_DB.activeRegion];
+      const destMatches = Object.values(region.destinations).filter(d =>
+        d.name.toLowerCase().includes(q) ||
+        d.district.toLowerCase().includes(q) ||
+        d.category.toLowerCase().includes(q) ||
+        d.tagline.toLowerCase().includes(q)
+      );
+
+      const hikeMatches = Object.values(region.hikingTrails).filter(h =>
+        h.name.toLowerCase().includes(q) ||
+        h.district.toLowerCase().includes(q) ||
+        h.subtitle.toLowerCase().includes(q)
+      );
+
+      if (destMatches.length === 0 && hikeMatches.length === 0) {
+        dropdown.innerHTML = `
+          <div class="p-4 text-sm text-stone-500 text-center">
+            No Kathmandu Valley matches for "<strong>${escapeHtml(query)}</strong>". Try <em>Dakshinkali</em>, <em>Champadevi</em>, <em>Bhaktapur</em>, or <em>Nagarkot</em>.
+          </div>
+        `;
+        dropdown.classList.remove('hidden');
+        return;
+      }
+
+      let html = '';
+
+      if (destMatches.length > 0) {
+        html += `<div class="px-4 py-2 bg-stone-50 text-[11px] font-bold uppercase tracking-wider text-stone-500 border-b border-stone-100">Destinations (${destMatches.length})</div>`;
+        destMatches.forEach(d => {
+          html += `
+            <button onclick="openDestinationModal('${d.id}'); document.getElementById('hero-search-results').classList.add('hidden');" class="w-full text-left px-4 py-3 hover:bg-forest-50 flex items-center justify-between gap-3 border-b border-stone-100 transition">
+              <div>
+                <div class="font-bold text-sm text-stone-900">${d.name}</div>
+                <div class="text-xs text-stone-500">${d.district} � ${d.category}</div>
+              </div>
+              <span class="text-xs font-semibold text-forest-700 shrink-0">View Guide ?</span>
+            </button>
+          `;
+        });
+      }
+
+      if (hikeMatches.length > 0) {
+        html += `<div class="px-4 py-2 bg-stone-50 text-[11px] font-bold uppercase tracking-wider text-stone-500 border-b border-stone-100">Hiking Trails (${hikeMatches.length})</div>`;
+        hikeMatches.forEach(h => {
+          html += `
+            <button onclick="openHikingModal('${h.id}'); document.getElementById('hero-search-results').classList.add('hidden');" class="w-full text-left px-4 py-3 hover:bg-terracotta-50 flex items-center justify-between gap-3 border-b border-stone-100 transition">
+              <div>
+                <div class="font-bold text-sm text-stone-900">${h.name}</div>
+                <div class="text-xs text-stone-500">${h.difficulty} � Peak ${h.summitElevation} � ${h.distance}</div>
+              </div>
+              <span class="text-xs font-semibold text-terracotta-700 shrink-0">Trail Guide ?</span>
+            </button>
+          `;
+        });
+      }
+
+      dropdown.innerHTML = html;
+      dropdown.classList.remove('hidden');
+    }
+
+    // ==================== HOME PAGE FEATURED RENDERERS ====================
+    function renderHomeFeatured() {
+      const region = NEPAL_TRAVEL_DB.regions[NEPAL_TRAVEL_DB.activeRegion];
+      const featuredDestIds = ['dakshinkali', 'bhaktapur', 'patan', 'boudhanath', 'nagarkot', 'chobhar_taudaha'];
+      const destContainer = document.getElementById('home-featured-destinations');
+
+      destContainer.innerHTML = featuredDestIds.map(id => {
+        const d = region.destinations[id];
+        return createDestinationCardHTML(d);
+      }).join('');
+
+      const hikeContainer = document.getElementById('home-featured-hiking');
+      hikeContainer.innerHTML = Object.values(region.hikingTrails).slice(0, 2).map(h => createHikingCardHTML(h)).join('');
+
+      lucide.createIcons();
+    }
+
+    // ==================== DESTINATIONS DIRECTORY & CARDS ====================
+    function createDestinationCardHTML(d) {
+      return `
+        <article class="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-sm hover:shadow-lg transition-all flex flex-col group">
+          <div class="relative h-52 overflow-hidden bg-forest-900">
+            <img src="${d.image}" alt="${d.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.style.display='none'" />
+            <div class="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent"></div>
+            <span class="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-bold bg-white/95 text-forest-900 shadow-sm">
+              ${d.category}
+            </span>
+            <div class="absolute bottom-3 left-3 right-3 text-white">
+              <div class="text-xs text-stone-200 flex items-center gap-1">
+                <i data-lucide="map-pin" class="w-3.5 h-3.5 text-terracotta-400"></i> ${d.district}
+              </div>
+              <h3 class="font-serif text-xl font-bold leading-snug">${d.name}</h3>
+            </div>
+          </div>
+          <div class="p-5 flex-grow flex flex-col justify-between space-y-4">
+            <p class="text-sm text-stone-600 line-clamp-2">${d.tagline}</p>
+            <div class="space-y-2 pt-2 border-t border-stone-100 text-xs text-stone-500">
+              <div class="flex items-center justify-between">
+                <span>Explore time:</span>
+                <span class="font-semibold text-stone-800">${d.timeRequired}</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span>Elevation:</span>
+                <span class="font-semibold text-stone-800">${d.elevation}</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 pt-1">
+              <button onclick="openDestinationModal('${d.id}')" class="flex-1 py-2.5 px-4 rounded-xl bg-forest-800 hover:bg-forest-900 text-white text-xs font-bold transition">
+                Destination Guide
+              </button>
+              <button onclick="quickPlanRoute('thamel', '${d.id}')" title="Plan route here" class="py-2.5 px-3 rounded-xl border border-stone-200 hover:bg-stone-100 text-stone-700 text-xs font-bold transition flex items-center gap-1">
+                <i data-lucide="navigation" class="w-3.5 h-3.5 text-terracotta-600"></i> Route
+              </button>
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderAllDestinations(filterCategory) {
+      const region = NEPAL_TRAVEL_DB.regions[NEPAL_TRAVEL_DB.activeRegion];
+      const grid = document.getElementById('all-destinations-grid');
+      const allDests = Object.values(region.destinations);
+
+      const filtered = filterCategory === 'all'
+        ? allDests
+        : allDests.filter(d => d.category === filterCategory);
+
+      grid.innerHTML = filtered.map(d => createDestinationCardHTML(d)).join('');
+      lucide.createIcons();
+    }
+
+    function filterDestinations(category) {
+      document.querySelectorAll('.dest-filter-btn').forEach(btn => {
+        if (btn.dataset.filter === category) {
+          btn.className = 'dest-filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-forest-800 text-white transition';
+        } else {
+          btn.className = 'dest-filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white border border-stone-200 text-stone-700 hover:bg-stone-50 transition';
+        }
+      });
+      renderAllDestinations(category);
+    }
+
+    // ==================== HIKING & ADVENTURE RENDERERS ====================
+    function createHikingCardHTML(h) {
+      const diffColors = {
+        'Easy': 'bg-emerald-100 text-emerald-900',
+        'Easy to Moderate': 'bg-teal-100 text-teal-900',
+        'Moderate': 'bg-amber-100 text-amber-900',
+        'Moderate to Challenging': 'bg-terracotta-100 text-terracotta-900'
+      };
+      const badgeClass = diffColors[h.difficulty] || 'bg-stone-100 text-stone-800';
+
+      return `
+        <article class="bg-white rounded-3xl border border-stone-200 overflow-hidden shadow-sm hover:shadow-lg transition-all flex flex-col sm:flex-row group">
+          <div class="relative sm:w-2/5 h-56 sm:h-auto overflow-hidden bg-forest-950 shrink-0">
+            <img src="${h.image}" alt="${h.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.style.display='none'" />
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+            <span class="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-bold ${badgeClass} shadow-sm">
+              ${h.difficulty}
+            </span>
+            <div class="absolute bottom-3 left-3 text-white">
+              <span class="text-xs font-semibold bg-black/50 backdrop-blur-sm px-2.5 py-1 rounded-lg">
+                Peak: ${h.summitElevation}
+              </span>
+            </div>
+          </div>
+
+          <div class="p-6 flex-grow flex flex-col justify-between space-y-4">
+            <div>
+              <div class="text-xs font-bold uppercase tracking-wider text-forest-700">${h.district}</div>
+              <h3 class="font-serif text-xl sm:text-2xl font-bold text-stone-900 mt-0.5">${h.name}</h3>
+              <p class="text-sm text-stone-600 mt-1.5">${h.subtitle}</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 py-3 border-y border-stone-100 text-xs">
+              <div>
+                <span class="text-stone-400 block">Distance (Est.)</span>
+                <span class="font-bold text-stone-800">${h.distance}</span>
+              </div>
+              <div>
+                <span class="text-stone-400 block">Uphill / Downhill</span>
+                <span class="font-bold text-stone-800">${h.uphillDuration.split('(')[0]} / ${h.downhillDuration.split('(')[0]}</span>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2.5">
+              <button onclick="openHikingModal('${h.id}')" class="flex-1 py-2.5 px-4 rounded-xl bg-terracotta-600 hover:bg-terracotta-700 text-white text-xs font-bold transition shadow-sm">
+                Full Trail & Gear Guide
+              </button>
+              <button onclick="focusItemOnMap(${h.coords[0]}, ${h.coords[1]}, '${h.name}')" class="py-2.5 px-3.5 rounded-xl border border-stone-200 hover:bg-stone-100 text-stone-700 text-xs font-bold transition flex items-center gap-1">
+                <i data-lucide="map-pin" class="w-3.5 h-3.5 text-forest-700"></i> Map
+              </button>
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderHikingTrails() {
+      const region = NEPAL_TRAVEL_DB.regions[NEPAL_TRAVEL_DB.activeRegion];
+      const grid = document.getElementById('hiking-trails-grid');
+      grid.innerHTML = Object.values(region.hikingTrails).map(h => createHikingCardHTML(h)).join('');
+      lucide.createIcons();
+    }
+
+    // ==================== ROUTE EXPLORER LOGIC ====================
+    function populateRouteSelects() {
+      const region = NEPAL_TRAVEL_DB.regions[NEPAL_TRAVEL_DB.activeRegion];
+      const originSelect = document.getElementById('route-origin');
+      const destSelect = document.getElementById('route-destination');
+
+      const optionsHtml = region.hubs.map(h =>
+        `<option value="${h.id}">${h.name}</option>`
+      ).join('');
+
+      originSelect.innerHTML = optionsHtml;
+      destSelect.innerHTML = optionsHtml;
+
+      originSelect.value = appState.originId;
+      destSelect.value = appState.destinationId;
+    }
+
+    function selectTransportMode(mode) {
+      appState.transportMode = mode;
+      document.querySelectorAll('.mode-btn').forEach(btn => {
+        if (btn.dataset.mode === mode) {
+          btn.className = 'mode-btn flex items-center justify-center gap-2.5 p-3.5 rounded-xl border-2 border-forest-700 bg-forest-50 text-forest-900 font-semibold text-sm transition';
+        } else {
+          btn.className = 'mode-btn flex items-center justify-center gap-2.5 p-3.5 rounded-xl border border-stone-200 bg-white text-stone-700 hover:bg-stone-50 font-semibold text-sm transition';
+        }
+      });
+      calculateAndRenderRoute();
+    }
+
+    function swapRouteLocations() {
+      const originSelect = document.getElementById('route-origin');
+      const destSelect = document.getElementById('route-destination');
+      const temp = originSelect.value;
+      originSelect.value = destSelect.value;
+      destSelect.value = temp;
+      calculateAndRenderRoute();
+    }
+
+    function quickPlanRoute(originId, destId) {
+      switchTab('routes');
+      document.getElementById('route-origin').value = originId;
+      document.getElementById('route-destination').value = destId;
+      calculateAndRenderRoute();
+    }
+
+    // Haversine helper for realistic valley corridor estimation when pair isn't hardcoded
+    function haversineKm(coord1, coord2) {
+      const R = 6371;
+      const dLat = (coord2[0] - coord1[0]) * Math.PI / 180;
+      const dLon = (coord2[1] - coord1[1]) * Math.PI / 180;
+      const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(coord1[0] * Math.PI / 180) * Math.cos(coord2[0] * Math.PI / 180) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    function getRouteData(originId, destId) {
+      const region = NEPAL_TRAVEL_DB.regions[NEPAL_TRAVEL_DB.activeRegion];
+      const origin = region.hubs.find(h => h.id === originId);
+      const dest = region.hubs.find(h => h.id === destId);
+
+      if (!origin || !dest) return null;
+
+      if (originId === destId) {
+        return {
+          sameLocation: true,
+          origin,
+          dest
+        };
+      }
+
+      const key = `${originId}__${destId}`;
+      const reverseKey = `${destId}__${originId}`;
+
+      if (region.routes[key]) {
+        return { ...region.routes[key], origin, dest, isSynthesized: false };
+      }
+      if (region.routes[reverseKey]) {
+        const rev = region.routes[reverseKey];
+        return {
+          ...rev,
+          origin,
+          dest,
+          waypoints: [...rev.waypoints].reverse(),
+          isSynthesized: false
+        };
+      }
+
+      // Synthesize a realistic Kathmandu Valley corridor estimate
+      const straightKm = haversineKm(origin.coords, dest.coords);
+      const roadKm = Math.max(2.5, +(straightKm * 1.38).toFixed(1)); // Valley road winding factor
+      const destDetail = region.destinations[destId];
+
+      const bikeMin = Math.round(roadKm * 2.4 + 8);
+      const bikeMax = Math.round(roadKm * 3.4 + 15);
+      const carMin = Math.round(roadKm * 2.7 + 10);
+      const carMax = Math.round(roadKm * 4.0 + 20);
+      const busMin = Math.round(roadKm * 3.8 + 15);
+      const busMax = Math.round(roadKm * 5.2 + 25);
+      const walkHoursMin = +(roadKm / 4.2).toFixed(1);
+      const walkHoursMax = +(roadKm / 3.3).toFixed(1);
+
+      const taxiLow = Math.round((roadKm * 65 + 150) / 50) * 50;
+      const taxiHigh = Math.round((roadKm * 95 + 250) / 50) * 50;
+      const busFare = roadKm < 8 ? 'NPR 25 � 40' : roadKm < 18 ? 'NPR 45 � 75' : 'NPR 70 � 130';
+
+      const midLat = (origin.coords[0] + dest.coords[0]) / 2 + 0.004;
+      const midLng = (origin.coords[1] + dest.coords[1]) / 2 - 0.004;
+
+      return {
+        origin,
+        dest,
+        isSynthesized: true,
+        distanceKm: `~${roadKm} km (estimated road distance)`,
+        durations: {
+          bike: `${bikeMin} � ${bikeMax} mins (estimated)`,
+          car: `${carMin} � ${carMax} mins (estimated)`,
+          bus: `${busMin} � ${busMax} mins (estimated, may require Ring Road / Ratna Park transfer)`,
+          walking: `${walkHoursMin} � ${walkHoursMax} hours (estimated)`
+        },
+        costs: {
+          bike: `NPR ${Math.round(roadKm * 11)} � ${Math.round(roadKm * 16)} (est. fuel) / Ride-share bike varies`,
+          car: `NPR ${taxiLow.toLocaleString()} � ${taxiHigh.toLocaleString()} (estimated metered/ride-share taxi range)`,
+          bus: `${busFare} (estimated local microbus/Sajha Yatayat range)`,
+          walking: 'Free'
+        },
+        corridor: `${origin.name.split('(')[0].trim()} ? Ring Road / Valley Arterial Corridor ? ${dest.name.split('(')[0].trim()}`,
+        landmarks: [
+          `${origin.district} urban arterial junction`,
+          'Kathmandu Ring Road / Bagmati River bridge crossing',
+          destDetail ? destDetail.mainAttractions[0] : `${dest.district} local bazaar`
+        ],
+        roadConditions: {
+          verified: 'Primary valley roads are paved blacktop; final approaches to hilltop temples or outskirts may involve steeper, narrower two-lane segments.',
+          unavailable: 'Live traffic congestion, road construction diversions, and exact microbus departure intervals are unavailable.'
+        },
+        recommendedStops: destDetail && destDetail.nearbyPlaces
+          ? destDetail.nearbyPlaces.slice(0, 2).map(nId => {
+              const nd = region.destinations[nId] || region.hikingTrails[nId];
+              return {
+                name: nd ? nd.name : nId,
+                reason: nd ? (nd.tagline || nd.subtitle) : 'Nearby valley attraction',
+                destId: region.destinations[nId] ? nId : null,
+                hikeId: region.hikingTrails[nId] ? nId : null
+              };
+            })
+          : [],
+        nearbySuggestions: destDetail ? (destDetail.nearbyPlaces || []) : ['patan', 'bhaktapur', 'swayambhunath'],
+        waypoints: [origin.coords, [midLat, midLng], dest.coords]
+      };
+    }
+
+    function calculateAndRenderRoute() {
+      const originId = document.getElementById('route-origin').value;
+      const destId = document.getElementById('route-destination').value;
+      appState.originId = originId;
+      appState.destinationId = destId;
+
+      const container = document.getElementById('route-results-container');
+      const data = getRouteData(originId, destId);
+
+      if (!data) return;
+
+      if (data.sameLocation) {
+        container.innerHTML = `
+          <div class="bg-amber-50 border border-amber-200 rounded-2xl p-6 text-amber-900 flex items-center gap-3">
+            <i data-lucide="info" class="w-6 h-6 text-amber-600 shrink-0"></i>
+            <div>
+              <h3 class="font-bold">Same Starting Location & Destination Selected</h3>
+              <p class="text-sm mt-0.5">You selected <strong>${data.origin.name}</strong> for both points. Choose a different destination to calculate a route.</p>
+            </div>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      const region = NEPAL_TRAVEL_DB.regions[NEPAL_TRAVEL_DB.activeRegion];
+      const modeLabels = {
+        bike: 'Bike / Scooter',
+        car: 'Car / Taxi',
+        bus: 'Public Bus / Microbus',
+        walking: 'Walking'
+      };
+
+      const selectedDuration = data.durations[appState.transportMode];
+      const selectedCost = data.costs[appState.transportMode];
+      const destGuide = region.destinations[destId];
+
+      // Build Nearby Suggestions HTML
+      const nearbyHtml = (data.nearbySuggestions || []).map(nId => {
+        const dObj = region.destinations[nId];
+        const hObj = region.hikingTrails[nId];
+        if (dObj) {
+          return `
+            <div class="bg-stone-50 rounded-2xl p-4 border border-stone-200 flex flex-col justify-between gap-3">
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-forest-700">${dObj.category}</span>
+                <h4 class="font-serif font-bold text-base text-stone-900 mt-0.5">${dObj.name}</h4>
+                <p class="text-xs text-stone-600 mt-1 line-clamp-2">${dObj.tagline}</p>
+              </div>
+              <button onclick="openDestinationModal('${dObj.id}')" class="w-full py-2 px-3 rounded-xl bg-white hover:bg-forest-800 hover:text-white border border-stone-200 text-xs font-bold text-forest-800 transition">
+                Explore Destination ?
+              </button>
+            </div>
+          `;
+        } else if (hObj) {
+          return `
+            <div class="bg-stone-50 rounded-2xl p-4 border border-stone-200 flex flex-col justify-between gap-3">
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-terracotta-700">Hiking Trail � ${hObj.difficulty}</span>
+                <h4 class="font-serif font-bold text-base text-stone-900 mt-0.5">${hObj.name}</h4>
+                <p class="text-xs text-stone-600 mt-1 line-clamp-2">${hObj.subtitle}</p>
+              </div>
+              <button onclick="openHikingModal('${hObj.id}')" class="w-full py-2 px-3 rounded-xl bg-white hover:bg-terracotta-600 hover:text-white border border-stone-200 text-xs font-bold text-terracotta-700 transition">
+                View Trail Guide ?
+              </button>
+            </div>
+          `;
+        }
+        return '';
+      }).join('');
+
+      container.innerHTML = `
+        <!-- Key Route Metrics Strip -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm">
+            <div class="flex items-center justify-between text-xs text-stone-500 mb-1">
+              <span>Total Distance</span>
+              <span class="px-2 py-0.5 rounded bg-amber-50 text-amber-800 font-semibold text-[10px]">Estimate</span>
+            </div>
+            <div class="text-xl font-bold text-stone-900">${data.distanceKm}</div>
+          </div>
+
+          <div class="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm">
+            <div class="flex items-center justify-between text-xs text-stone-500 mb-1">
+              <span>Duration (${modeLabels[appState.transportMode]})</span>
+              <span class="px-2 py-0.5 rounded bg-amber-50 text-amber-800 font-semibold text-[10px]">Traffic Dependent</span>
+            </div>
+            <div class="text-lg font-bold text-forest-800">${selectedDuration}</div>
+          </div>
+
+          <div class="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm">
+            <div class="flex items-center justify-between text-xs text-stone-500 mb-1">
+              <span>Estimated Cost</span>
+              <span class="px-2 py-0.5 rounded bg-amber-50 text-amber-800 font-semibold text-[10px]">Approx. Range</span>
+            </div>
+            <div class="text-sm font-bold text-stone-900 leading-snug">${selectedCost}</div>
+          </div>
+
+          <div class="bg-forest-900 text-white rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+            <div class="text-xs text-forest-200">Interactive Map & Destination</div>
+            <div class="flex items-center gap-2 mt-2">
+              <button onclick="viewActiveRouteOnMap()" class="flex-1 py-2 px-3 rounded-xl bg-terracotta-600 hover:bg-terracotta-500 text-white text-xs font-bold transition flex items-center justify-center gap-1">
+                <i data-lucide="map" class="w-3.5 h-3.5"></i> Map Route
+              </button>
+              ${destGuide ? `
+                <button onclick="openDestinationModal('${destGuide.id}')" class="flex-1 py-2 px-3 rounded-xl bg-white/15 hover:bg-white/25 text-white text-xs font-bold transition">
+                  Full Guide
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        </div>
+
+        <!-- Detailed Corridor & Conditions Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          <!-- Left 2 Columns: Route Corridor, Landmarks, All Transport Comparisons -->
+          <div class="lg:col-span-2 space-y-6">
+            
+            <!-- Suggested Travel Route & Landmarks -->
+            <div class="bg-white rounded-3xl p-6 border border-stone-200 shadow-sm space-y-5">
+              <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-forest-700">Suggested Travel Corridor</span>
+                <h3 class="font-serif text-xl font-bold text-stone-900 mt-1">${data.corridor}</h3>
+              </div>
+
+              <div>
+                <h4 class="text-xs font-bold uppercase tracking-wider text-stone-500 mb-2.5">Important Landmarks Along the Route</h4>
+                <div class="flex flex-wrap gap-2">
+                  ${data.landmarks.map((lm, idx) => `
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-100 text-stone-800 text-xs font-semibold">
+                      <span class="w-4 h-4 rounded-full bg-forest-700 text-white text-[10px] flex items-center justify-center">${idx + 1}</span>
+                      ${lm}
+                    </span>
+                  `).join('')}
+                </div>
+              </div>
+
+              <!-- Transport Modes Comparison Table -->
+              <div class="pt-3 border-t border-stone-100">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-stone-500 mb-3">Available Transportation Options & Estimated Fares</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                  <div class="p-3.5 rounded-xl border ${appState.transportMode === 'bike' ? 'border-forest-600 bg-forest-50/60' : 'border-stone-200 bg-stone-50'}">
+                    <div class="font-bold text-stone-900 flex items-center gap-1.5"><i data-lucide="bike" class="w-4 h-4 text-forest-700"></i> Bike / Scooter</div>
+                    <div class="text-stone-600 mt-1">Time: <strong>${data.durations.bike}</strong></div>
+                    <div class="text-stone-600 mt-0.5">Cost: ${data.costs.bike}</div>
+                  </div>
+
+                  <div class="p-3.5 rounded-xl border ${appState.transportMode === 'car' ? 'border-forest-600 bg-forest-50/60' : 'border-stone-200 bg-stone-50'}">
+                    <div class="font-bold text-stone-900 flex items-center gap-1.5"><i data-lucide="car" class="w-4 h-4 text-forest-700"></i> Car / Taxi / Ride-Share</div>
+                    <div class="text-stone-600 mt-1">Time: <strong>${data.durations.car}</strong></div>
+                    <div class="text-stone-600 mt-0.5">Cost: ${data.costs.car}</div>
+                  </div>
+
+                  <div class="p-3.5 rounded-xl border ${appState.transportMode === 'bus' ? 'border-forest-600 bg-forest-50/60' : 'border-stone-200 bg-stone-50'}">
+                    <div class="font-bold text-stone-900 flex items-center gap-1.5"><i data-lucide="bus" class="w-4 h-4 text-forest-700"></i> Public Bus / Microbus</div>
+                    <div class="text-stone-600 mt-1">Time: <strong>${data.durations.bus}</strong></div>
+                    <div class="text-stone-600 mt-0.5">Fare: ${data.costs.bus}</div>
+                  </div>
+
+                  <div class="p-3.5 rounded-xl border ${appState.transportMode === 'walking' ? 'border-forest-600 bg-forest-50/60' : 'border-stone-200 bg-stone-50'}">
+                    <div class="font-bold text-stone-900 flex items-center gap-1.5"><i data-lucide="footprints" class="w-4 h-4 text-forest-700"></i> Walking</div>
+                    <div class="text-stone-600 mt-1">Time: <strong>${data.durations.walking}</strong></div>
+                    <div class="text-stone-600 mt-0.5">Cost: ${data.costs.walking}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Road Conditions & Reliability Notice -->
+            <div class="bg-white rounded-3xl p-6 border border-stone-200 shadow-sm space-y-4">
+              <h3 class="font-serif text-lg font-bold text-stone-900 flex items-center gap-2">
+                <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-600"></i>
+                Road Conditions & Travel Advisories
+              </h3>
+              <div class="space-y-3 text-sm">
+                <div class="p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-200 text-emerald-950">
+                  <span class="text-xs font-bold uppercase tracking-wider text-emerald-800 block mb-1">? Known Road Surface & Terrain</span>
+                  ${data.roadConditions.verified}
+                </div>
+                <div class="p-3.5 rounded-xl bg-stone-100 border border-stone-200 text-stone-800">
+                  <span class="text-xs font-bold uppercase tracking-wider text-stone-600 block mb-1">? Live Data Limitation</span>
+                  ${data.roadConditions.unavailable}
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Right Column: Recommended Stops & Nearby Exploration -->
+          <div class="space-y-6">
+            
+            <!-- Recommended Stops Along Journey -->
+            <div class="bg-white rounded-3xl p-6 border border-stone-200 shadow-sm space-y-4">
+              <h3 class="font-serif text-lg font-bold text-stone-900">Recommended Stops Along the Way</h3>
+              ${data.recommendedStops && data.recommendedStops.length > 0 ? `
+                <div class="space-y-3">
+                  ${data.recommendedStops.map(stop => `
+                    <div class="p-3.5 rounded-2xl bg-forest-50/60 border border-forest-100">
+                      <div class="font-bold text-sm text-forest-950">${stop.name}</div>
+                      <p class="text-xs text-stone-600 mt-1">${stop.reason}</p>
+                      ${stop.destId ? `<button onclick="openDestinationModal('${stop.destId}')" class="mt-2 text-xs font-bold text-terracotta-700 hover:underline">Open Stop Guide ?</button>` : ''}
+                      ${stop.hikeId ? `<button onclick="openHikingModal('${stop.hikeId}')" class="mt-2 text-xs font-bold text-terracotta-700 hover:underline">Open Trail Guide ?</button>` : ''}
+                    </div>
+                  `).join('')}
+                </div>
+              ` : `
+                <p class="text-xs text-stone-500">Direct urban corridor; explore nearby attractions below once you arrive.</p>
+              `}
+            </div>
+
+            <!-- Nearby Exploration Panel -->
+            <div class="bg-white rounded-3xl p-6 border border-stone-200 shadow-sm space-y-4">
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-terracotta-600">Explore Beyond</span>
+                <h3 class="font-serif text-lg font-bold text-stone-900">Nearby Places Worth Visiting</h3>
+              </div>
+              <div class="space-y-3">
+                ${nearbyHtml}
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      `;
+
+      // Update map route if map has already been initialized
+      if (appState.mapInstance) {
+        drawActiveRouteOnMap();
+      }
+
+      lucide.createIcons();
+    }
+
+    // ==================== DETAIL MODALS (DESTINATION & HIKING) ====================
+    function openDestinationModal(destId) {
+      const region = NEPAL_TRAVEL_DB.regions[NEPAL_TRAVEL_DB.activeRegion];
+      const d = region.destinations[destId];
+      if (!d) return;
+
+      const nearbyCards = (d.nearbyPlaces || []).map(nId => {
+        const nd = region.destinations[nId];
+        const nh = region.hikingTrails[nId];
+        if (nd) {
+          return `
+            <button onclick="openDestinationModal('${nd.id}')" class="text-left p-3.5 rounded-2xl bg-stone-50 hover:bg-forest-50 border border-stone-200 hover:border-forest-300 transition">
+              <span class="text-[10px] font-bold uppercase text-forest-700 block">${nd.category}</span>
+              <span class="font-bold text-sm text-stone-900 block mt-0.5">${nd.name}</span>
+              <span class="text-xs text-terracotta-700 font-semibold mt-1 inline-block">Explore ?</span>
+            </button>
+          `;
+        } else if (nh) {
+          return `
+            <button onclick="openHikingModal('${nh.id}')" class="text-left p-3.5 rounded-2xl bg-stone-50 hover:bg-terracotta-50 border border-stone-200 hover:border-terracotta-300 transition">
+              <span class="text-[10px] font-bold uppercase text-terracotta-700 block">Hiking Trail</span>
+              <span class="font-bold text-sm text-stone-900 block mt-0.5">${nh.name}</span>
+              <span class="text-xs text-terracotta-700 font-semibold mt-1 inline-block">View Trail ?</span>
+            </button>
+          `;
+        }
+        return '';
+      }).join('');
+
+      const modalContent = document.getElementById('detail-modal-content');
+      modalContent.innerHTML = `
+        <!-- Hero Image -->
+        <div class="relative h-64 sm:h-80 bg-forest-950">
+          <img src="${d.image}" alt="${d.name}" class="w-full h-full object-cover" onerror="this.style.display='none'" />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
+          <div class="absolute bottom-5 left-6 right-6 text-white">
+            <div class="flex flex-wrap items-center gap-2 mb-2">
+              <span class="px-3 py-1 rounded-full text-xs font-bold bg-terracotta-600 text-white">${d.category}</span>
+              <span class="px-3 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-md">${d.district}</span>
+              <span class="px-3 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-md">Elev: ${d.elevation}</span>
+            </div>
+            <h2 class="font-serif text-3xl sm:text-4xl font-bold">${d.name}</h2>
+            <p class="text-sm text-stone-200 mt-1">${d.tagline}</p>
+          </div>
+        </div>
+
+        <!-- Action Bar -->
+        <div class="bg-stone-50 px-6 py-3.5 border-b border-stone-200 flex flex-wrap items-center justify-between gap-3">
+          <div class="text-xs text-stone-600">
+            Coordinates: <span class="font-mono font-semibold text-stone-800">${d.coords[0].toFixed(4)}� N, ${d.coords[1].toFixed(4)}� E</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="closeDetailModal(); quickPlanRoute('thamel', '${d.id}')" class="px-4 py-2 rounded-xl bg-forest-800 hover:bg-forest-900 text-white text-xs font-bold transition flex items-center gap-1.5">
+              <i data-lucide="navigation" class="w-3.5 h-3.5"></i> Plan Route Here
+            </button>
+            <button onclick="closeDetailModal(); focusItemOnMap(${d.coords[0]}, ${d.coords[1]}, '${d.name}')" class="px-4 py-2 rounded-xl bg-white hover:bg-stone-100 border border-stone-300 text-stone-800 text-xs font-bold transition flex items-center gap-1.5">
+              <i data-lucide="map-pin" class="w-3.5 h-3.5 text-terracotta-600"></i> View on Map
+            </button>
+          </div>
+        </div>
+
+        <!-- Body Content -->
+        <div class="p-6 sm:p-8 space-y-8 text-stone-800">
+          
+          <!-- Intro & Why Famous -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-2">
+              <h3 class="font-serif text-lg font-bold text-forest-950">Introduction & History</h3>
+              <p class="text-sm text-stone-600 leading-relaxed">${d.introHistory}</p>
+            </div>
+            <div class="space-y-2 bg-forest-50/70 p-5 rounded-2xl border border-forest-100">
+              <h3 class="font-serif text-lg font-bold text-forest-950">Why It Is Famous</h3>
+              <p class="text-sm text-stone-700 leading-relaxed">${d.whyFamous}</p>
+            </div>
+          </div>
+
+          <!-- Key Visitor Logistics -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="p-4 rounded-2xl border border-stone-200 bg-white">
+              <span class="text-xs font-bold uppercase text-stone-400 block">Best Time to Visit</span>
+              <p class="text-xs sm:text-sm font-semibold text-stone-800 mt-1">${d.bestTimeToVisit}</p>
+            </div>
+            <div class="p-4 rounded-2xl border border-stone-200 bg-white">
+              <span class="text-xs font-bold uppercase text-stone-400 block">Time Required</span>
+              <p class="text-xs sm:text-sm font-semibold text-stone-800 mt-1">${d.timeRequired}</p>
+            </div>
+            <div class="p-4 rounded-2xl border border-stone-200 bg-white">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase text-stone-400">Entry Fees</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold ${d.entryFees.status === 'verified' ? 'bg-emerald-50 text-emerald-800' : 'bg-amber-50 text-amber-800'}">
+                  ${d.entryFees.status === 'verified' ? 'Verified' : 'Estimated'}
+                </span>
+              </div>
+              <p class="text-xs font-semibold text-stone-800 mt-1">${d.entryFees.details}</p>
+            </div>
+          </div>
+
+          <!-- Attractions & Activities -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h3 class="font-serif text-lg font-bold text-stone-900 mb-3">Main Attractions</h3>
+              <ul class="space-y-2 text-sm text-stone-700">
+                ${d.mainAttractions.map(item => `
+                  <li class="flex items-start gap-2">
+                    <i data-lucide="check-circle-2" class="w-4 h-4 text-forest-700 shrink-0 mt-0.5"></i>
+                    <span>${item}</span>
+                  </li>
+                `).join('')}
+              </ul>
+            </div>
+
+            <div>
+              <h3 class="font-serif text-lg font-bold text-stone-900 mb-3">Activities Available</h3>
+              <div class="flex flex-wrap gap-2">
+                ${d.activities.map(act => `
+                  <span class="px-3.5 py-2 rounded-xl bg-stone-100 text-stone-800 text-xs font-semibold">${act}</span>
+                `).join('')}
+              </div>
+
+              <h3 class="font-serif text-lg font-bold text-stone-900 mt-5 mb-2">Local Food & Accommodation</h3>
+              <p class="text-sm text-stone-600 leading-relaxed">${d.foodAccommodation}</p>
+            </div>
+          </div>
+
+          <!-- Safety Tips -->
+          <div class="bg-amber-50/80 border border-amber-200 rounded-2xl p-5">
+            <h3 class="font-serif text-base font-bold text-amber-950 flex items-center gap-2 mb-2.5">
+              <i data-lucide="shield-alert" class="w-5 h-5 text-amber-700"></i> Safety Tips & Travel Advice
+            </h3>
+            <ul class="space-y-1.5 text-xs sm:text-sm text-amber-950">
+              ${d.safetyTips.map(tip => `<li>� ${tip}</li>`).join('')}
+            </ul>
+          </div>
+
+          <!-- Nearby Exploration -->
+          ${nearbyCards ? `
+            <div class="pt-4 border-t border-stone-200">
+              <span class="text-xs font-bold uppercase tracking-wider text-terracotta-600">Continue Your Journey</span>
+              <h3 class="font-serif text-xl font-bold text-stone-900 mb-3">Nearby Places Worth Visiting</h3>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                ${nearbyCards}
+              </div>
+            </div>
+          ` : ''}
+
+        </div>
+      `;
+
+      document.getElementById('detail-modal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function openHikingModal(hikeId) {
+      const region = NEPAL_TRAVEL_DB.regions[NEPAL_TRAVEL_DB.activeRegion];
+      const h = region.hikingTrails[hikeId];
+      if (!h) return;
+
+      const modalContent = document.getElementById('detail-modal-content');
+      modalContent.innerHTML = `
+        <!-- Hero -->
+        <div class="relative h-64 sm:h-80 bg-forest-950">
+          <img src="${h.image}" alt="${h.name}" class="w-full h-full object-cover" onerror="this.style.display='none'" />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent"></div>
+          <div class="absolute bottom-5 left-6 right-6 text-white">
+            <div class="flex flex-wrap items-center gap-2 mb-2">
+              <span class="px-3 py-1 rounded-full text-xs font-bold bg-terracotta-600 text-white">${h.difficulty}</span>
+              <span class="px-3 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-md">Summit: ${h.summitElevation}</span>
+              <span class="px-3 py-1 rounded-full text-xs font-medium bg-white/20 backdrop-blur-md">${h.distance}</span>
+            </div>
+            <h2 class="font-serif text-3xl sm:text-4xl font-bold">${h.name}</h2>
+            <p class="text-sm text-stone-200 mt-1">${h.subtitle}</p>
+          </div>
+        </div>
+
+        <!-- Action Bar -->
+        <div class="bg-stone-50 px-6 py-3.5 border-b border-stone-200 flex flex-wrap items-center justify-between gap-3">
+          <span class="text-xs font-semibold text-stone-700">Best Season: <strong>${h.bestSeason}</strong></span>
+          <button onclick="closeDetailModal(); focusItemOnMap(${h.coords[0]}, ${h.coords[1]}, '${h.name}')" class="px-4 py-2 rounded-xl bg-forest-800 hover:bg-forest-900 text-white text-xs font-bold transition flex items-center gap-1.5">
+            <i data-lucide="map-pin" class="w-3.5 h-3.5"></i> View Trail on Map
+          </button>
+        </div>
+
+        <!-- Trail Details Body -->
+        <div class="p-6 sm:p-8 space-y-8 text-stone-800">
+          
+          <!-- Elevation & Duration Metrics -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+            <div class="p-4 rounded-2xl bg-forest-50 border border-forest-100">
+              <span class="text-[11px] font-bold uppercase text-forest-700 block">Start ? Summit</span>
+              <span class="text-sm font-bold text-forest-950 mt-1 block">${h.startElevation.split('(')[0]} ? ${h.summitElevation.split('(')[0]}</span>
+              <span class="text-[11px] text-forest-700">${h.elevationGain}</span>
+            </div>
+            <div class="p-4 rounded-2xl bg-stone-50 border border-stone-200">
+              <span class="text-[11px] font-bold uppercase text-stone-500 block">Total Distance</span>
+              <span class="text-sm font-bold text-stone-900 mt-1 block">${h.distance}</span>
+            </div>
+            <div class="p-4 rounded-2xl bg-stone-50 border border-stone-200">
+              <span class="text-[11px] font-bold uppercase text-stone-500 block">Est. Uphill Time</span>
+              <span class="text-sm font-bold text-stone-900 mt-1 block">${h.uphillDuration}</span>
+            </div>
+            <div class="p-4 rounded-2xl bg-stone-50 border border-stone-200">
+              <span class="text-[11px] font-bold uppercase text-stone-500 block">Est. Downhill Time</span>
+              <span class="text-sm font-bold text-stone-900 mt-1 block">${h.downhillDuration}</span>
+            </div>
+          </div>
+
+          <!-- Starting Points & Trail Options -->
+          <div>
+            <h3 class="font-serif text-lg font-bold text-stone-900 mb-2.5">Starting Points & Trail Options</h3>
+            <ul class="space-y-2 text-sm text-stone-700">
+              ${h.startingPoints.map(sp => `
+                <li class="p-3 rounded-xl bg-stone-50 border border-stone-200 flex items-start gap-2.5">
+                  <i data-lucide="flag" class="w-4 h-4 text-terracotta-600 shrink-0 mt-0.5"></i>
+                  <span>${sp}</span>
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+
+          <!-- Viewpoints & Natural/Cultural Attractions -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h3 class="font-serif text-lg font-bold text-stone-900 mb-2.5">Important Viewpoints</h3>
+              <ul class="space-y-2 text-sm text-stone-700">
+                ${h.viewpoints.map(vp => `
+                  <li class="flex items-start gap-2">
+                    <i data-lucide="eye" class="w-4 h-4 text-forest-700 shrink-0 mt-0.5"></i>
+                    <span>${vp}</span>
+                  </li>
+                `).join('')}
+              </ul>
+            </div>
+
+            <div>
+              <h3 class="font-serif text-lg font-bold text-stone-900 mb-2.5">Natural & Cultural Attractions</h3>
+              <ul class="space-y-2 text-sm text-stone-700">
+                ${h.attractionsAlongTrail.map(att => `
+                  <li class="flex items-start gap-2">
+                    <i data-lucide="trees" class="w-4 h-4 text-forest-700 shrink-0 mt-0.5"></i>
+                    <span>${att}</span>
+                  </li>
+                `).join('')}
+              </ul>
+            </div>
+          </div>
+
+          <!-- Interactive Required Equipment Checklist -->
+          <div class="bg-stone-50 rounded-2xl p-5 border border-stone-200">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="font-serif text-lg font-bold text-stone-900">Required Equipment Checklist</h3>
+              <span class="text-xs text-stone-500">Tap items to pack</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              ${h.equipment.map((eq, idx) => {
+                const checkKey = `${h.id}_${idx}`;
+                const isChecked = !!appState.checkedEquipment[checkKey];
+                return `
+                  <label class="flex items-start gap-2.5 p-3 rounded-xl bg-white border border-stone-200 cursor-pointer hover:border-forest-400 transition text-xs sm:text-sm">
+                    <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="appState.checkedEquipment['${checkKey}'] = this.checked" class="mt-0.5 rounded text-forest-700 focus:ring-forest-600" />
+                    <span class="text-stone-800">${eq}</span>
+                  </label>
+                `;
+              }).join('')}
+            </div>
+          </div>
+
+          <!-- Food & Water Availability + Safety Precautions -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="p-5 rounded-2xl bg-sky-50/70 border border-sky-200">
+              <h3 class="font-serif text-base font-bold text-sky-950 flex items-center gap-2 mb-2">
+                <i data-lucide="droplets" class="w-5 h-5 text-sky-700"></i> Food & Water Availability
+              </h3>
+              <p class="text-xs sm:text-sm text-sky-950 leading-relaxed">${h.foodWaterAvailability.details}</p>
+            </div>
+
+            <div class="p-5 rounded-2xl bg-amber-50/80 border border-amber-200">
+              <h3 class="font-serif text-base font-bold text-amber-950 flex items-center gap-2 mb-2">
+                <i data-lucide="shield-alert" class="w-5 h-5 text-amber-700"></i> Safety Precautions
+              </h3>
+              <ul class="space-y-1.5 text-xs sm:text-sm text-amber-950">
+                ${h.safetyPrecautions.map(sp => `<li>� ${sp}</li>`).join('')}
+              </ul>
+            </div>
+          </div>
+
+        </div>
+      `;
+
+      document.getElementById('detail-modal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeDetailModal() {
+      document.getElementById('detail-modal').classList.add('hidden');
+    }
+
+    // ==================== INTERACTIVE LEAFLET MAP ====================
+    function initOrUpdateMap() {
+      if (!appState.mapInstance) {
+        // Center on Kathmandu Valley
+        appState.mapInstance = L.map('interactive-map').setView([27.6915, 85.3420], 11);
+
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+          attribution: '&copy; OpenStreetMap &copy; CARTO',
+          subdomains: 'abcd',
+          maxZoom: 18
+        }).addTo(appState.mapInstance);
+
+        appState.mapLayerGroup = L.layerGroup().addTo(appState.mapInstance);
+        appState.routeLayerGroup = L.layerGroup().addTo(appState.mapInstance);
+      }
+
+      appState.mapInstance.invalidateSize();
+      renderMapMarkersAndRoute();
+    }
+
+    function setMapFilter(filterType) {
+      appState.mapFilter = filterType;
+      document.querySelectorAll('.map-filter-btn').forEach(btn => {
+        if (btn.dataset.mapfilter === filterType) {
+          btn.className = 'map-filter-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-forest-800 text-white shadow-sm transition';
+        } else {
+          btn.className = 'map-filter-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-white border border-stone-200 text-stone-700 hover:bg-stone-50 transition';
+        }
+      });
+      renderMapMarkersAndRoute();
+    }
+
+    function createCustomPinIcon(colorHex, labelChar) {
+      return L.divIcon({
+        className: '',
+        html: `<div class="custom-pin" style="background-color:${colorHex}; width:30px; height:30px; font-size:12px;">${labelChar}</div>`,
+        iconSize: [30, 30],
+        iconAnchor: [15, 15],
+        popupAnchor: [0, -14]
+      });
+    }
+
+    function renderMapMarkersAndRoute() {
+      if (!appState.mapInstance) return;
+
+      appState.mapLayerGroup.clearLayers();
+      appState.routeLayerGroup.clearLayers();
+
+      const region = NEPAL_TRAVEL_DB.regions[NEPAL_TRAVEL_DB.activeRegion];
+      const filter = appState.mapFilter;
+
+      // 1. Render Destinations Markers
+      if (filter === 'all' || filter === 'heritage') {
+        Object.values(region.destinations).forEach(d => {
+          const marker = L.marker(d.coords, {
+            icon: createCustomPinIcon('#2a5240', 'D')
+          });
+          marker.bindPopup(`
+            <div class="min-w-[200px] space-y-1.5">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded">${d.category}</span>
+              <h4 class="font-bold text-sm text-stone-900">${d.name}</h4>
+              <p class="text-xs text-stone-600">${d.tagline}</p>
+              <div class="pt-1 flex gap-1.5">
+                <button onclick="openDestinationModal('${d.id}')" class="flex-1 py-1.5 px-2.5 rounded-lg bg-forest-800 text-white text-xs font-bold">Guide</button>
+                <button onclick="quickPlanRoute('thamel', '${d.id}')" class="py-1.5 px-2.5 rounded-lg bg-stone-100 text-stone-800 text-xs font-bold">Route</button>
+              </div>
+            </div>
+          `);
+          appState.mapLayerGroup.addLayer(marker);
+        });
+      }
+
+      // 2. Render Hiking Trail Markers & Trail Lines
+      if (filter === 'all' || filter === 'hiking') {
+        Object.values(region.hikingTrails).forEach(h => {
+          const peakMarker = L.marker(h.coords, {
+            icon: createCustomPinIcon('#c64d30', '?')
+          });
+          peakMarker.bindPopup(`
+            <div class="min-w-[200px] space-y-1.5">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-terracotta-800 bg-terracotta-50 px-2 py-0.5 rounded">${h.difficulty} � ${h.summitElevation}</span>
+              <h4 class="font-bold text-sm text-stone-900">${h.name}</h4>
+              <p class="text-xs text-stone-600">${h.distance} � ${h.uphillDuration}</p>
+              <button onclick="openHikingModal('${h.id}')" class="w-full mt-1 py-1.5 px-2.5 rounded-lg bg-terracotta-600 text-white text-xs font-bold">Open Trail Guide</button>
+            </div>
+          `);
+          appState.mapLayerGroup.addLayer(peakMarker);
+
+          if (h.trailheadCoords) {
+            const trailLine = L.polyline([h.trailheadCoords, h.coords], {
+              color: '#c64d30',
+              weight: 3,
+              dashArray: '6, 6',
+              opacity: 0.85
+            });
+            appState.mapLayerGroup.addLayer(trailLine);
+          }
+        });
+      }
+
+      // 3. Render Transit Hubs
+      if (filter === 'all') {
+        region.hubs.filter(h => h.type === 'hub').forEach(hub => {
+          const hubMarker = L.marker(hub.coords, {
+            icon: createCustomPinIcon('#d97706', 'H')
+          });
+          hubMarker.bindPopup(`
+            <div class="space-y-1">
+              <span class="text-[10px] font-bold uppercase text-amber-800">Transit / Start Hub</span>
+              <h4 class="font-bold text-sm text-stone-900">${hub.name}</h4>
+            </div>
+          `);
+          appState.mapLayerGroup.addLayer(hubMarker);
+        });
+      }
+
+      // 4. Always draw active Route Explorer corridor
+      drawActiveRouteOnMap(filter === 'route');
+    }
+
+    function drawActiveRouteOnMap(fitBounds = false) {
+      if (!appState.mapInstance || !appState.routeLayerGroup) return;
+      appState.routeLayerGroup.clearLayers();
+
+      const routeData = getRouteData(appState.originId, appState.destinationId);
+      if (!routeData || routeData.sameLocation || !routeData.waypoints) return;
+
+      const polyline = L.polyline(routeData.waypoints, {
+        color: '#c64d30',
+        weight: 5,
+        opacity: 0.9
+      }).addTo(appState.routeLayerGroup);
+
+      const startMarker = L.marker(routeData.origin.coords, {
+        icon: createCustomPinIcon('#1d372c', 'S')
+      }).bindPopup(`<strong>Start:</strong> ${routeData.origin.name}`);
+
+      const endMarker = L.marker(routeData.dest.coords, {
+        icon: createCustomPinIcon('#c64d30', 'E')
+      }).bindPopup(`<strong>Destination:</strong> ${routeData.dest.name}<br/><span class="text-xs">${routeData.distanceKm}</span>`);
+
+      appState.routeLayerGroup.addLayer(startMarker);
+      appState.routeLayerGroup.addLayer(endMarker);
+
+      if (fitBounds) {
+        appState.mapInstance.fitBounds(polyline.getBounds(), { padding: [50, 50] });
+      }
+    }
+
+    function viewActiveRouteOnMap() {
+      switchTab('map');
+      setTimeout(() => {
+        setMapFilter('route');
+        drawActiveRouteOnMap(true);
+      }, 150);
+    }
+
+    function focusItemOnMap(lat, lng, title) {
+      switchTab('map');
+      setTimeout(() => {
+        setMapFilter('all');
+        appState.mapInstance.setView([lat, lng], 14);
+        L.popup()
+          .setLatLng([lat, lng])
+          .setContent(`<div class="font-bold text-sm text-stone-900">${escapeHtml(title)}</div>`)
+          .openOn(appState.mapInstance);
+      }, 150);
+    }
+
+    // Security helper for search input
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, function(m) {
+        return ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#39;'
+        })[m];
+      });
+    }
+  </script>
+</body>
+</html>
